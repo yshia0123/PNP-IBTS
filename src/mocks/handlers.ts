@@ -489,6 +489,17 @@ export const handlers = [
       timestamp: new Date().toISOString(),
     });
 
+    // Notify the submitter that their request was received.
+    db.notifications.unshift({
+      id: `n-${Date.now()}-self`,
+      userId,
+      type: "info",
+      title: "Claim Request Submitted",
+      message: `Your claim request (${newClaim.id}) was submitted and is awaiting review.`,
+      read: false,
+      createdAt: new Date().toISOString(),
+    });
+
     // Notify every admin that a new claim needs attention.
     for (const admin of db.users.filter((u) => u.role === "admin")) {
       db.notifications.unshift({

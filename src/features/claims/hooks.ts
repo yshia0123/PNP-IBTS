@@ -129,6 +129,8 @@ export function useSubmitClaim() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["claims", "list"] });
       queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+      // Refresh the notification bell (the submitter gets a confirmation).
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "notifications"] });
     },
   });
 }
