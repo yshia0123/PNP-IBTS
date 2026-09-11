@@ -11,13 +11,24 @@ export async function POST(request: Request) {
   const email = (body.email ?? "").trim().toLowerCase();
   const password = body.password ?? "";
 
-  const { data: user } = await supabaseAdmin
+  const { data: user, error } = await supabaseAdmin
     .from("users")
     .select("*")
     .ilike("email", email)
     .maybeSingle();
 
-  if (!user || user.password !== password) {
+  if (error) {
+    // Surface DB/connection problems as a 500 instead of a misleading 401.
+    console.error("[login] Supabase query error:", error.message);
+    return jsonError("Login is temporarily unavailable.", 500);
+  }
+
+  if (!user) {
+    console.warn(`[login] No user found for email "${email}".`);
+    return jsonError("Invalid email or password.", 401);
+  }
+  if (user.password !== password) {
+    console.warn(`[login] Password mismatch for "${email}".`);
     return jsonError("Invalid email or password.", 401);
   }
 
