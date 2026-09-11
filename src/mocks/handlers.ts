@@ -413,6 +413,80 @@ export const handlers = [
     return HttpResponse.json(retirees);
   }),
 
+  // ---- Global search (role-scoped) -------------------------------------
+  http.get("/api/search", async ({ request }) => {
+    await latency();
+    const url = new URL(request.url);
+    const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+
+    const user = db.users.find((u) => u.id === currentUserId(request));
+    const role = user?.role ?? "dependent";
+    const results: {
+      type: "personnel" | "claim" | "retiree";
+      id: string;
+      label: string;
+      sublabel: string;
+      href: string;
+    }[] = [];
+
+    if (!q) return HttpResponse.json(results);
+
+    const canPersonnel = role === "admin" || role === "hr_manager";
+    const canClaims =
+      role === "admin" || role === "hr_manager"; // full claim search
+    const canRetirees =
+      role === "admin" || role === "hr_manager" || role === "retiree";
+
+    if (canPersonnel) {
+      for (const p of db.personnel) {
+        if (
+          p.fullName.toLowerCase().includes(q) ||
+          p.rank.toLowerCase().includes(q)
+        ) {
+          results.push({
+            type: "personnel",
+            id: p.id,
+            label: p.fullName,
+            sublabel: `${p.rank} · Personnel`,
+            href: "/personnel",
+          });
+        }
+      }
+    }
+
+    if (canClaims) {
+      for (const c of db.claims) {
+        const person = db.personnel.find((p) => p.id === c.personnelId);
+        const hay = `${c.id} ${c.status} ${person?.fullName ?? ""}`.toLowerCase();
+        if (hay.includes(q)) {
+          results.push({
+            type: "claim",
+            id: c.id,
+            label: `Claim ${c.id}`,
+            sublabel: `${person?.fullName ?? ""} · ${c.status.replace("_", " ")}`,
+            href: "/claims",
+          });
+        }
+      }
+    }
+
+    if (canRetirees) {
+      for (const p of db.personnel.filter((x) => x.status === "retired")) {
+        if (p.fullName.toLowerCase().includes(q) && canRetirees) {
+          results.push({
+            type: "retiree",
+            id: `ret-${p.id}`,
+            label: p.fullName,
+            sublabel: `${p.rank} · Retiree`,
+            href: "/retirees",
+          });
+        }
+      }
+    }
+
+    return HttpResponse.json(results.slice(0, 8));
+  }),
+
   // ---- Audit logs (read-only) ------------------------------------------
   http.get("/api/audit-logs", async () => {
     await latency();

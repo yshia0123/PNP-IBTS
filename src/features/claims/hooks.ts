@@ -27,14 +27,46 @@ export function useMyBenefitOptions() {
   });
 }
 
+/** Apply a partial update to a claim across every cached claims list. */
+function patchClaimInCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  id: string,
+  patch: Partial<ClaimRow>
+) {
+  queryClient.setQueriesData<ClaimRow[]>(
+    { queryKey: ["claims", "list"] },
+    (old) =>
+      old?.map((c) => (c.id === id ? { ...c, ...patch } : c)) ?? old
+  );
+}
+
 export function useStartReview() {
   const queryClient = useQueryClient();
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useMutation({
     mutationFn: (id: string) =>
       apiFetch<ClaimRow>(`/api/claims/${id}/start-review`, {
         method: "PATCH",
       }),
-    onSuccess: () => {
+    // Optimistic: flip to under_review immediately (SSOT Phase 4 step 13).
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: ["claims", "list"] });
+      const previous = queryClient.getQueriesData<ClaimRow[]>({
+        queryKey: ["claims", "list"],
+      });
+      patchClaimInCache(queryClient, id, {
+        status: "under_review",
+        reviewedBy: userId,
+        reviewedAt: new Date().toISOString(),
+      });
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      context?.previous?.forEach(([key, data]) =>
+        queryClient.setQueryData(key, data)
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["claims", "list"] });
       queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
     },
@@ -49,13 +81,32 @@ export interface ClaimDecision {
 
 export function useDecideClaim() {
   const queryClient = useQueryClient();
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useMutation({
     mutationFn: ({ id, status, notes }: ClaimDecision) =>
       apiFetch<Claim>(`/api/claims/${id}`, {
         method: "PATCH",
         body: JSON.stringify({ status, notes }),
       }),
-    onSuccess: () => {
+    // Optimistic: reflect the decision immediately, roll back on error.
+    onMutate: async ({ id, status, notes }: ClaimDecision) => {
+      await queryClient.cancelQueries({ queryKey: ["claims", "list"] });
+      const previous = queryClient.getQueriesData<ClaimRow[]>({
+        queryKey: ["claims", "list"],
+      });
+      patchClaimInCache(queryClient, id, {
+        status,
+        notes,
+        reviewedBy: userId,
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous?.forEach(([key, data]) =>
+        queryClient.setQueryData(key, data)
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["claims", "list"] });
       queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
     },

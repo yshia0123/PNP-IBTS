@@ -3,9 +3,10 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Bell, Search, UserCircle2, LogOut } from "lucide-react";
+import { Bell, UserCircle2, LogOut } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
+import { GlobalSearch } from "@/features/search/global-search";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -53,18 +54,7 @@ export function Header() {
         </span>
       </div>
 
-      <div className="relative flex-1 max-w-md">
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden
-        />
-        <input
-          type="search"
-          placeholder="Search personnel, claims, benefits..."
-          aria-label="Global search"
-          className="w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-2">
         <button
