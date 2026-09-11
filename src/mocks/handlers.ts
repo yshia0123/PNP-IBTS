@@ -71,6 +71,54 @@ export const handlers = [
     return HttpResponse.json(user);
   }),
 
+  // Change password (validates the current password against the credential).
+  http.post("/api/session/change-password", async ({ request }) => {
+    await latency();
+    const userId = currentUserId(request);
+    const user = db.users.find((u) => u.id === userId);
+    const body = (await request.json().catch(() => ({}))) as {
+      currentPassword?: string;
+      newPassword?: string;
+    };
+
+    const cred = user
+      ? db.credentials.find(
+          (c) => c.email.toLowerCase() === user.email.toLowerCase()
+        )
+      : undefined;
+
+    if (!cred) {
+      return HttpResponse.json(
+        { message: "No credential on file for this account." },
+        { status: 404 }
+      );
+    }
+    if (cred.password !== (body.currentPassword ?? "")) {
+      return HttpResponse.json(
+        { message: "Current password is incorrect." },
+        { status: 401 }
+      );
+    }
+    if (!body.newPassword || body.newPassword.length < 6) {
+      return HttpResponse.json(
+        { message: "New password must be at least 6 characters." },
+        { status: 422 }
+      );
+    }
+
+    cred.password = body.newPassword;
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId: userId,
+      action: "session.password_changed",
+      targetType: "session",
+      targetId: userId,
+      timestamp: new Date().toISOString(),
+    });
+
+    return HttpResponse.json({ ok: true });
+  }),
+
   // ---- Current user ----------------------------------------------------
   http.get("/api/session/me", async ({ request }) => {
     await latency();

@@ -20,3 +20,19 @@ export function useLogin() {
     onSuccess: (user) => setUser(user),
   });
 }
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/** Change the signed-in user's password (mock — validates current password). */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (input: ChangePasswordInput) =>
+      apiFetch<{ ok: boolean }>("/api/session/change-password", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+  });
+}
