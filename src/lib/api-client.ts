@@ -1,14 +1,25 @@
+import { useSessionStore } from "@/lib/stores/session-store";
+
 /**
  * Thin fetch wrapper used by all feature API modules. Throws on non-2xx so
  * TanStack Query surfaces error states, and parses JSON responses.
+ *
+ * Attaches the current demo user id as `x-demo-user-id` so the MSW layer can
+ * scope responses to the active role (SSOT Section 1.4 / 2.4).
  */
 export async function apiFetch<T>(
   input: string,
   init?: RequestInit
 ): Promise<T> {
+  const currentUserId = useSessionStore.getState().currentUser.id;
+
   const res = await fetch(input, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
     ...init,
+    headers: {
+      "Content-Type": "application/json",
+      "x-demo-user-id": currentUserId,
+      ...init?.headers,
+    },
   });
 
   if (!res.ok) {

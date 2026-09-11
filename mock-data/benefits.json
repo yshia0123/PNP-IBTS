@@ -35,5 +35,52 @@
     "status": "active",
     "amount": 68000,
     "effectiveDate": "2023-03-01"
+  },
+  {
+    "id": "b-005",
+    "personnelId": "p-003",
+    "type": "insurance",
+    "label": "Life Insurance & Death Benefits",
+    "status": "active",
+    "amount": 600000,
+    "effectiveDate": "2018-01-01",
+    "expiryDate": "2033-01-01"
+  },
+  {
+    "id": "b-006",
+    "personnelId": "p-004",
+    "type": "active_benefit",
+    "label": "Command Allowance",
+    "status": "active",
+    "amount": 90000,
+    "effectiveDate": "2022-01-01"
+  },
+  {
+    "id": "b-007",
+    "personnelId": "p-004",
+    "type": "retirement",
+    "label": "Retirement Track — Pension Accrual",
+    "status": "active",
+    "amount": 2100000,
+    "effectiveDate": "2024-01-01"
+  },
+  {
+    "id": "b-008",
+    "personnelId": "p-002",
+    "type": "active_benefit",
+    "label": "Hazard Pay & Field Allowance",
+    "status": "active",
+    "amount": 32000,
+    "effectiveDate": "2023-06-01"
+  },
+  {
+    "id": "b-009",
+    "personnelId": "p-002",
+    "type": "insurance",
+    "label": "Group Life Insurance",
+    "status": "pending",
+    "amount": 300000,
+    "effectiveDate": "2026-10-01"
   }
 ]
+

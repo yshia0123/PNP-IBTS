@@ -5,7 +5,7 @@ import type { Benefit, Notification, Personnel } from "@/lib/types";
 export type DashboardPersonnel = Personnel & { division?: string };
 
 export function fetchMyPersonnel() {
-  return apiFetch<DashboardPersonnel>("/api/personnel/me");
+  return apiFetch<DashboardPersonnel | null>("/api/personnel/me");
 }
 
 export function fetchMyBenefits() {

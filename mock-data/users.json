@@ -30,5 +30,12 @@
     "rank": "PLTCOL",
     "division": "Retired — Benefits Admin Div",
     "email": "r.domingo@ibts.local"
+  },
+  {
+    "id": "u-005",
+    "name": "Maria Cruz",
+    "role": "dependent",
+    "division": "Dependent — Spouse of PCOL Alex V. Cruz",
+    "email": "m.cruz@ibts.local"
   }
 ]

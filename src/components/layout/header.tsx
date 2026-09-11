@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { Bell, Search, UserCircle2 } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
+import { useSessionStore } from "@/lib/stores/session-store";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -15,13 +17,18 @@ const ROLES: { value: Role; label: string }[] = [
 
 /**
  * Header (SmartContainer) — SSOT Section 2.1/2.2.
- * Phase 1: search, notification bell (badge), demo role switcher, and user
- * menu placeholder. Data wiring (notifications, active user, role gating)
- * arrives in later phases; controls are accessible and functional now.
+ * The demo role switcher swaps the current user (one representative account
+ * per role), which drives data scoping and nav/action gating (Section 2.4).
  */
 export function Header() {
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
+  const currentUser = useSessionStore((s) => s.currentUser);
+  const setRole = useSessionStore((s) => s.setRole);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   return (
     <header className="flex h-14 items-center gap-4 border-b border-border bg-surface px-4">
@@ -45,7 +52,8 @@ export function Header() {
         </label>
         <select
           id="role-switcher"
-          defaultValue="hr_manager"
+          value={currentUser.role}
+          onChange={(e) => setRole(e.target.value as Role)}
           className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground focus:outline-none"
         >
           {ROLES.map((r) => (
@@ -68,7 +76,7 @@ export function Header() {
 
         <button
           type="button"
-          aria-label="Notifications, 2 unread"
+          aria-label="Notifications"
           className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Bell className="h-5 w-5" aria-hidden />
@@ -80,13 +88,18 @@ export function Header() {
           />
         </button>
 
-        <button
-          type="button"
-          aria-label="User menu"
-          className="flex items-center gap-2 rounded-md p-1.5 text-foreground transition-colors hover:bg-muted"
-        >
+        <div className="flex items-center gap-2 rounded-md p-1.5 text-foreground">
           <UserCircle2 className="h-7 w-7 text-muted-foreground" aria-hidden />
-        </button>
+          <div className="hidden text-left sm:block">
+            <p className="text-sm font-medium leading-tight">
+              {currentUser.name}
+            </p>
+            <p className="text-xs leading-tight text-muted-foreground">
+              {currentUser.rank ? `${currentUser.rank} · ` : ""}
+              {ROLES.find((r) => r.value === currentUser.role)?.label}
+            </p>
+          </div>
+        </div>
       </div>
     </header>
   );

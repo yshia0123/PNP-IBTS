@@ -11,10 +11,22 @@ production backend, authentication, or business logic.
 
 ## Status
 
-**Phase 1 — Environment & Shell** (complete). The app shell (Header, collapsible
-Sidebar, Status Bar) and tooling (Tailwind, TanStack Query, Zustand, MSW) are in
-place. Dashboard content and feature modules are built in later phases per the
-roadmap in Section 5 of the SSOT.
+**Phases 1–3 complete.** The app shell, tooling, core dashboard, and module
+views (Personnel, Claims, Retirees, Audit) are in place, with the remaining
+modules (Financial, Settings) as guarded placeholders.
+
+The prototype ships **one representative user per role** (admin, HR manager,
+officer, retiree, dependent). Use the **role switcher in the header** to change
+the current user — it re-scopes dashboard data and gates which sidebar modules
+and actions are available, per the Role-Based View Matrix (SSOT Section 2.4).
+
+| Role | Demo user | Sees |
+|---|---|---|
+| Admin | Jordan M. Reyes | All modules, full access |
+| HR Manager | Alex V. Cruz | All modules; read-only Financial & Audit |
+| Officer | Sam T. Bautista | Dashboard, Personnel, Claims, Settings |
+| Retiree | Riza L. Domingo | Dashboard, Claims, Retirees, Settings |
+| Dependent | Maria Cruz | Dashboard (verification focus), Settings |
 
 ## Tech Stack
 

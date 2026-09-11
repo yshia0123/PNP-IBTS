@@ -25,5 +25,50 @@
     "message": "Personnel records synced successfully.",
     "read": true,
     "createdAt": "2026-09-11T06:30:00Z"
+  },
+  {
+    "id": "n-004",
+    "userId": "u-002",
+    "type": "action_required",
+    "title": "3 Claims Awaiting Final Approval",
+    "message": "Claims escalated for administrator sign-off.",
+    "read": false,
+    "createdAt": "2026-09-10T08:00:00Z"
+  },
+  {
+    "id": "n-005",
+    "userId": "u-002",
+    "type": "info",
+    "title": "Monthly Audit Export Ready",
+    "message": "September audit log export is available for review.",
+    "read": false,
+    "createdAt": "2026-09-11T07:15:00Z"
+  },
+  {
+    "id": "n-006",
+    "userId": "u-003",
+    "type": "alert",
+    "title": "Claim Submitted",
+    "message": "Your medical allowance claim is now under review.",
+    "read": false,
+    "createdAt": "2026-09-02T10:00:00Z"
+  },
+  {
+    "id": "n-007",
+    "userId": "u-004",
+    "type": "info",
+    "title": "Pension Disbursed",
+    "message": "Your monthly pension for September has been disbursed.",
+    "read": false,
+    "createdAt": "2026-09-01T09:00:00Z"
+  },
+  {
+    "id": "n-008",
+    "userId": "u-005",
+    "type": "action_required",
+    "title": "Verification In Progress",
+    "message": "Your dependent verification as spouse is pending review.",
+    "read": false,
+    "createdAt": "2026-09-05T09:05:00Z"
   }
 ]

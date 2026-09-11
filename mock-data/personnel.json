@@ -36,5 +36,18 @@
     "promotionHistory": [
       { "id": "pr-5", "fromRank": "PMAJ", "toRank": "PLTCOL", "date": "2012-09-05" }
     ]
+  },
+  {
+    "id": "p-004",
+    "userId": "u-002",
+    "fullName": "Jordan M. Reyes",
+    "rank": "PBGEN",
+    "serviceYears": 30,
+    "joinDate": "1994-05-15",
+    "status": "active",
+    "promotionHistory": [
+      { "id": "pr-6", "fromRank": "PCOL", "toRank": "PBGEN", "date": "2019-11-20" },
+      { "id": "pr-7", "fromRank": "PLTCOL", "toRank": "PCOL", "date": "2013-07-01" }
+    ]
   }
 ]

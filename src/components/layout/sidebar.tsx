@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen, ShieldCheck } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
+import { useSessionStore } from "@/lib/stores/session-store";
+import { canAccessModule } from "@/lib/permissions";
 import { NAV_ITEMS, APP_VERSION } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +18,11 @@ export function Sidebar() {
   const pathname = usePathname();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const role = useSessionStore((s) => s.currentUser.role);
+
+  const visibleItems = NAV_ITEMS.filter((item) =>
+    canAccessModule(role, item.key)
+  );
 
   return (
     <aside
@@ -34,7 +41,7 @@ export function Sidebar() {
       </div>
 
       <nav aria-label="Primary" className="flex-1 space-y-1 px-2">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const active =
             item.href === "/"
               ? pathname === "/"
