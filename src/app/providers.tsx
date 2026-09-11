@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 /**
+ * Client-only MSW initializer. Loaded with `ssr: false` so `msw/browser`
+ * (which sets `node: null` in its package exports) never enters the server
+ * module graph.
+ */
+const MswInit = dynamic(() => import("@/mocks/msw-init"), { ssr: false });
+
+const MSW_ENABLED = process.env.NODE_ENV === "development";
+
+/**
  * App-wide client providers:
- *  - TanStack Query for server-state simulation (SSOT Section 3.3).
- *  - MSW startup in development, so all fetch calls are intercepted before
- *    any data-fetching component runs.
- *
- * Rendering of children is gated on MSW readiness in development to avoid a
- * race where a request fires before the worker is listening.
+ *  - MSW startup in development (SSOT Section 3.3), gated on worker readiness.
+ *  - TanStack Query for server-state simulation, caching, and mock fetch
+ *    lifecycle.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -26,32 +33,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
-  const [mswReady, setMswReady] = useState(
-    () => process.env.NODE_ENV !== "development"
-  );
-
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return;
-
-    let active = true;
-    (async () => {
-      const { worker } = await import("@/mocks/browser");
-      await worker.start({
-        onUnhandledRequest: "bypass",
-      });
-      if (active) setMswReady(true);
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (!mswReady) {
-    return null;
-  }
-
-  return (
+  const tree = (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+
+  if (MSW_ENABLED) {
+    return <MswInit>{tree}</MswInit>;
+  }
+
+  return tree;
 }

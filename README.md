@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IBTS — Integrated Benefits Tracking System (Frontend Prototype)
+
+A centralized web portal prototype for tracking officer benefits, claims, and
+personnel records. This repository is a **frontend prototype only** — no
+production backend, authentication, or business logic.
+
+> **Architecture reference:** All architecture, UI/UX, component hierarchy,
+> tech stack, data models, and the implementation roadmap live in
+> [`PROJECT_SOURCE_OF_TRUTH.md`](./PROJECT_SOURCE_OF_TRUTH.md). Treat that
+> document as the single source of truth.
+
+## Status
+
+**Phase 1 — Environment & Shell** (complete). The app shell (Header, collapsible
+Sidebar, Status Bar) and tooling (Tailwind, TanStack Query, Zustand, MSW) are in
+place. Dashboard content and feature modules are built in later phases per the
+roadmap in Section 5 of the SSOT.
+
+## Tech Stack
+
+| Concern | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router) + TypeScript |
+| Styling | Tailwind CSS v4 (design tokens in `src/app/globals.css`) |
+| UI primitives | shadcn UI conventions / Radix (added per-component) |
+| Icons | Lucide React |
+| Charts | Recharts |
+| Client state | Zustand |
+| Server-state simulation | TanStack Query |
+| Forms & validation | React Hook Form + Zod |
+| Mock API | Mock Service Worker (MSW) |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# 1. Install dependencies
+npm install
+
+# 2. Run the dev server (MSW starts automatically in development)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Other scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build       # production build
+npm run start       # serve the production build
+npm run lint        # ESLint
+npm run type-check  # tsc --noEmit
+```
 
-## Learn More
+## How the mock API works
 
-To learn more about Next.js, take a look at the following resources:
+- MSW intercepts `fetch` calls at the network layer (see `src/mocks/`).
+- The service worker script lives at `public/mockServiceWorker.js`.
+- In development, the worker is started before the app renders (deferred
+  mounting) via `src/mocks/msw-init.tsx`, loaded client-side only.
+- A health endpoint (`GET /api/health`) proves interception works — the Status
+  Bar calls it on load and shows the result.
+- Feature handlers are registered in `src/mocks/handlers.ts` as modules are
+  built.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Local JSON fixtures live in [`/mock-data`](./mock-data), one file per entity,
+matching the interfaces in `src/lib/types.ts` (SSOT Section 4.1).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+mock-data/                 # JSON fixtures (users, personnel, benefits, ...)
+public/                    # static assets + mockServiceWorker.js
+src/
+  app/                     # App Router: layout, page, providers, globals.css
+  components/layout/        # Shell: header, sidebar, status-bar, app-shell
+  features/                # Feature-based modules (dashboard, claims, ...)
+  lib/                     # types, utils, navigation, stores/
+  mocks/                   # MSW browser worker, handlers, init
+PROJECT_SOURCE_OF_TRUTH.md # architecture single source of truth
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Structure follows the feature-based convention in SSOT Section 6.2.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scope
+
+See SSOT Sections 1.3 (goals) and 1.4 (explicit non-goals). No real personnel
+data — all seed data is fictional.
