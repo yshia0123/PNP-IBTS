@@ -3,10 +3,11 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Bell, UserCircle2, LogOut } from "lucide-react";
+import { UserCircle2, LogOut } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { GlobalSearch } from "@/features/search/global-search";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -68,17 +69,7 @@ export function Header() {
           {theme === "light" ? "Dark" : "Light"}
         </button>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Bell className="h-5 w-5" aria-hidden />
-          <span
-            className="absolute right-1 top-1 flex h-2 w-2 rounded-full bg-danger"
-            aria-hidden
-          />
-        </button>
+        <NotificationBell />
 
         <div className="flex items-center gap-2 rounded-md p-1.5 text-foreground">
           <UserCircle2 className="h-7 w-7 text-muted-foreground" aria-hidden />

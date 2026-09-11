@@ -72,5 +72,11 @@ Open http://localhost:3000 — you'll land on the **login** page.
   account details.
 - **Theme**: light/dark toggle in the header.
 
-## Reset
-Reload the page — mock data resets to its seeded state each session.
+## Persistence & reset
+Mock data now persists in the browser (localStorage), so changes — new claim
+requests, decisions, created accounts, notifications — **survive reloads and
+logout/login**. This is what lets an officer submit a claim and an admin see it
+after switching accounts.
+
+To reset back to the seeded demo data, clear the site's localStorage (DevTools →
+Application → Local Storage → delete the `ibts-mock-db:1` key) and reload.

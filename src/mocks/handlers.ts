@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { db, latency, shouldFail } from "./db";
+import { db, latency, persist, shouldFail } from "./db";
 import type { ClaimStatus } from "@/lib/types";
 
 /**
@@ -67,6 +67,7 @@ export const handlers = [
       targetId: user.id,
       timestamp: new Date().toISOString(),
     });
+    persist();
 
     return HttpResponse.json(user);
   }),
@@ -115,6 +116,7 @@ export const handlers = [
       targetId: userId,
       timestamp: new Date().toISOString(),
     });
+    persist();
 
     return HttpResponse.json({ ok: true });
   }),
@@ -179,6 +181,7 @@ export const handlers = [
       );
     }
     notification.read = body.read ?? true;
+    persist();
     return HttpResponse.json(notification);
   }),
 
@@ -193,6 +196,7 @@ export const handlers = [
       );
     }
     db.notifications.splice(index, 1);
+    persist();
     return new HttpResponse(null, { status: 204 });
   }),
 
@@ -274,6 +278,7 @@ export const handlers = [
       });
     }
 
+    persist();
     return HttpResponse.json(dependent);
   }),
 
@@ -359,6 +364,7 @@ export const handlers = [
       timestamp: new Date().toISOString(),
     });
 
+    persist();
     return HttpResponse.json(
       { user: db.users[0], personnel: createdPersonnel },
       { status: 201 }
@@ -404,6 +410,7 @@ export const handlers = [
       targetId: record.id,
       timestamp: new Date().toISOString(),
     });
+    persist();
 
     return HttpResponse.json(record);
   }),
@@ -495,6 +502,7 @@ export const handlers = [
       });
     }
 
+    persist();
     const benefit = db.benefits.find((b) => b.id === newClaim.benefitId);
     return HttpResponse.json(
       {
@@ -535,6 +543,7 @@ export const handlers = [
       timestamp: new Date().toISOString(),
     });
 
+    persist();
     const person = db.personnel.find((p) => p.id === claim.personnelId);
     const benefit = db.benefits.find((b) => b.id === claim.benefitId);
     return HttpResponse.json({
@@ -573,6 +582,7 @@ export const handlers = [
       targetId: claim.id,
       timestamp: new Date().toISOString(),
     });
+    persist();
 
     return HttpResponse.json(claim);
   }),

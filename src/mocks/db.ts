@@ -17,28 +17,83 @@ import type {
   User,
 } from "@/lib/types";
 
-/**
- * In-memory mock database, seeded from the JSON fixtures in /mock-data.
- * MSW handlers read and mutate these arrays so the prototype behaves like a
- * real backend within a session (SSOT Section 3.3). Reloading the page resets
- * state, matching the "local, resettable data" goal (Section 1.3).
- */
 interface Credential {
   email: string;
   password: string;
 }
 
-export const db = {
-  users: usersJson as User[],
-  personnel: personnelJson as Personnel[],
-  benefits: benefitsJson as Benefit[],
-  claims: claimsJson as Claim[],
-  dependents: dependentsJson as Dependent[],
-  auditLogs: auditLogsJson as AuditLog[],
-  notifications: notificationsJson as Notification[],
-  // Mock credentials — prototype auth only, never real security (Section 1.4).
-  credentials: credentialsJson as Credential[],
-};
+interface Db {
+  users: User[];
+  personnel: Personnel[];
+  benefits: Benefit[];
+  claims: Claim[];
+  dependents: Dependent[];
+  auditLogs: AuditLog[];
+  notifications: Notification[];
+  credentials: Credential[];
+}
+
+/** Bump when the seed shape changes to invalidate an old cached snapshot. */
+const STORAGE_KEY = "ibts-mock-db";
+const STORAGE_VERSION = "1";
+
+function seed(): Db {
+  // Deep clone so mutating the db never mutates the imported JSON modules.
+  return structuredClone({
+    users: usersJson as User[],
+    personnel: personnelJson as Personnel[],
+    benefits: benefitsJson as Benefit[],
+    claims: claimsJson as Claim[],
+    dependents: dependentsJson as Dependent[],
+    auditLogs: auditLogsJson as AuditLog[],
+    notifications: notificationsJson as Notification[],
+    credentials: credentialsJson as Credential[],
+  });
+}
+
+function load(): Db {
+  if (typeof window === "undefined") return seed();
+  try {
+    const raw = window.localStorage.getItem(`${STORAGE_KEY}:${STORAGE_VERSION}`);
+    if (raw) return JSON.parse(raw) as Db;
+  } catch {
+    // fall through to seed
+  }
+  return seed();
+}
+
+/**
+ * Mock database, seeded from the JSON fixtures and persisted to localStorage
+ * so changes (new claims, notifications, accounts) survive page reloads and
+ * logout/login within a browser. Use `resetDb()` to restore the seed.
+ */
+export const db: Db = load();
+
+/** Persist the current db to localStorage (called after every mutation). */
+export function persist(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      `${STORAGE_KEY}:${STORAGE_VERSION}`,
+      JSON.stringify(db)
+    );
+  } catch {
+    // storage full / unavailable — ignore for the prototype
+  }
+}
+
+/** Restore the seed data and clear the persisted snapshot. */
+export function resetDb(): void {
+  const fresh = seed();
+  (Object.keys(fresh) as (keyof Db)[]).forEach((key) => {
+    // Replace array contents in place so existing references stay valid.
+    (db[key] as unknown[]).length = 0;
+    (db[key] as unknown[]).push(...(fresh[key] as unknown[]));
+  });
+  if (typeof window !== "undefined") {
+    window.localStorage.removeItem(`${STORAGE_KEY}:${STORAGE_VERSION}`);
+  }
+}
 
 /** Simulate realistic network latency (SSOT Section 3.3: 300–800ms). */
 export function latency(): Promise<void> {
