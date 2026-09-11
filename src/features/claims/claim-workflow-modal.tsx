@@ -34,6 +34,9 @@ const STATUS_VARIANT: Record<
   rejected: "danger",
 };
 
+/** Statuses that can still receive an approve/reject decision. */
+const DECIDABLE_STATUSES: ClaimStatus[] = ["submitted", "under_review"];
+
 export function ClaimWorkflowModal({
   claim,
   open,
@@ -45,6 +48,8 @@ export function ClaimWorkflowModal({
   const [notes, setNotes] = useState("");
 
   if (!claim) return null;
+
+  const isDecidable = DECIDABLE_STATUSES.includes(claim.status);
 
   const handleClose = () => {
     setStep("review");
@@ -117,6 +122,12 @@ export function ClaimWorkflowModal({
               </div>
             )}
           </dl>
+          {canDecide && !isDecidable && (
+            <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+              This claim is {claim.status.replace("_", " ")} — a final decision
+              has already been recorded, so no further action is available.
+            </p>
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
@@ -125,7 +136,7 @@ export function ClaimWorkflowModal({
             >
               Close
             </button>
-            {canDecide && (
+            {canDecide && isDecidable && (
               <button
                 type="button"
                 onClick={() => setStep("decision")}

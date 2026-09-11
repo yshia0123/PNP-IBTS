@@ -47,3 +47,6 @@ next-env.d.ts
 # editor
 .idea/
 *.swp
+
+# Kiro local settings (may contain secrets like MCP access tokens)
+.kiro/settings/mcp.json

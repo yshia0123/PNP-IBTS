@@ -104,15 +104,19 @@ export function ClaimsPage() {
             ? "No claims match your filter."
             : "You haven't submitted any claims yet."
         }
-        rowActions={(claim) => (
-          <button
-            type="button"
-            onClick={() => openClaim(claim)}
-            className="rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-          >
-            {canDecide ? "Review" : "View"}
-          </button>
-        )}
+        rowActions={(claim) => {
+          const decidable =
+            claim.status === "submitted" || claim.status === "under_review";
+          return (
+            <button
+              type="button"
+              onClick={() => openClaim(claim)}
+              className="rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+            >
+              {canDecide && decidable ? "Review" : "View"}
+            </button>
+          );
+        }}
       />
 
       <ClaimWorkflowModal
