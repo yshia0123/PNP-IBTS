@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { db, latency, persist, shouldFail } from "./db";
+import { db, latency, persist, shouldFail, todayLocal } from "./db";
 import type { ClaimStatus } from "@/lib/types";
 
 /**
@@ -254,7 +254,7 @@ export const handlers = [
     }
 
     dependent.verificationStatus = "pending";
-    dependent.requestedDate = new Date().toISOString().slice(0, 10);
+    dependent.requestedDate = todayLocal();
 
     db.auditLogs.unshift({
       id: `al-${Date.now()}`,
@@ -336,7 +336,7 @@ export const handlers = [
         fullName: body.fullName,
         rank: body.rank ?? "N/A",
         serviceYears: body.serviceYears ?? 0,
-        joinDate: body.joinDate ?? new Date().toISOString().slice(0, 10),
+        joinDate: body.joinDate ?? todayLocal(),
         status: (body.role === "retiree" ? "retired" : "active") as
           | "active"
           | "retired"
@@ -351,7 +351,7 @@ export const handlers = [
         fullName: body.fullName,
         relationship: body.relationship ?? "other",
         verificationStatus: "unverified",
-        requestedDate: new Date().toISOString().slice(0, 10),
+        requestedDate: todayLocal(),
       });
     }
 
@@ -475,7 +475,7 @@ export const handlers = [
       personnelId: person.id,
       benefitId: body.benefitId,
       status: "submitted" as const,
-      submittedDate: new Date().toISOString().slice(0, 10),
+      submittedDate: todayLocal(),
       notes: body.notes,
     };
     db.claims.unshift(newClaim);

@@ -95,6 +95,19 @@ export function resetDb(): void {
   }
 }
 
+/**
+ * Today's date as a local `YYYY-MM-DD` string. Uses local date parts rather
+ * than `toISOString()` (which converts to UTC and can roll back a day for
+ * timezones ahead of UTC, e.g. UTC+8 before 8 AM).
+ */
+export function todayLocal(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 /** Simulate realistic network latency (SSOT Section 3.3: 300–800ms). */
 export function latency(): Promise<void> {
   const ms = 300 + Math.floor(Math.random() * 500);
