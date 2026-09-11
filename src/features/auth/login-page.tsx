@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LogIn } from "lucide-react";
+import { LogIn, AlertCircle } from "lucide-react";
 import { toast } from "@/lib/stores/toast-store";
 import { useLogin } from "./hooks";
 
 /**
  * LoginPage (SSOT Section 1.4 — mock auth). Validated with React Hook Form +
- * Zod; authenticates against the MSW login endpoint and redirects to the
- * dashboard on success.
+ * Zod; authenticates against the /api/session/login route (Supabase-backed)
+ * and redirects to the dashboard on success. Errors show inline.
  */
 const schema = z.object({
   email: z.string().min(1, "Email is required.").email("Enter a valid email."),
@@ -40,7 +40,8 @@ export function LoginPage() {
         toast.success("Signed in", `Welcome, ${user.name}.`);
         router.replace("/");
       },
-      onError: (err) => toast.error("Sign-in failed", (err as Error).message),
+      // Error is shown inline below the form (the Toaster isn't mounted on the
+      // login screen, which lives outside the app shell).
     });
   };
 
@@ -109,6 +110,16 @@ export function LoginPage() {
                 </p>
               )}
             </div>
+
+            {login.isError && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                <span>{(login.error as Error).message}</span>
+              </div>
+            )}
 
             <button
               type="submit"
