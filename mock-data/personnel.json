@@ -1,0 +1,40 @@
+[
+  {
+    "id": "p-001",
+    "userId": "u-001",
+    "fullName": "Alex V. Cruz",
+    "rank": "PCOL",
+    "serviceYears": 21,
+    "joinDate": "2004-06-01",
+    "status": "active",
+    "promotionHistory": [
+      { "id": "pr-1", "fromRank": "PLT", "toRank": "PCPT", "date": "2010-03-15" },
+      { "id": "pr-2", "fromRank": "PCPT", "toRank": "PMAJ", "date": "2015-08-01" },
+      { "id": "pr-3", "fromRank": "PMAJ", "toRank": "PCOL", "date": "2021-01-10" }
+    ]
+  },
+  {
+    "id": "p-002",
+    "userId": "u-003",
+    "fullName": "Sam T. Bautista",
+    "rank": "PCPT",
+    "serviceYears": 9,
+    "joinDate": "2016-04-12",
+    "status": "active",
+    "promotionHistory": [
+      { "id": "pr-4", "fromRank": "PLT", "toRank": "PCPT", "date": "2021-06-20" }
+    ]
+  },
+  {
+    "id": "p-003",
+    "userId": "u-004",
+    "fullName": "Riza L. Domingo",
+    "rank": "PLTCOL",
+    "serviceYears": 28,
+    "joinDate": "1995-02-01",
+    "status": "retired",
+    "promotionHistory": [
+      { "id": "pr-5", "fromRank": "PMAJ", "toRank": "PLTCOL", "date": "2012-09-05" }
+    ]
+  }
+]

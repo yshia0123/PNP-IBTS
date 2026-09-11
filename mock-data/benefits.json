@@ -1,0 +1,39 @@
+[
+  {
+    "id": "b-001",
+    "personnelId": "p-001",
+    "type": "active_benefit",
+    "label": "Hospitalization & Medical Allowance",
+    "status": "active",
+    "amount": 45000,
+    "effectiveDate": "2024-01-01"
+  },
+  {
+    "id": "b-002",
+    "personnelId": "p-001",
+    "type": "retirement",
+    "label": "Retirement Track — Pension Accrual",
+    "status": "pending",
+    "amount": 1200000,
+    "effectiveDate": "2026-01-01"
+  },
+  {
+    "id": "b-003",
+    "personnelId": "p-001",
+    "type": "insurance",
+    "label": "Life Insurance & Death Benefits",
+    "status": "active",
+    "amount": 500000,
+    "effectiveDate": "2020-06-01",
+    "expiryDate": "2030-06-01"
+  },
+  {
+    "id": "b-004",
+    "personnelId": "p-003",
+    "type": "retirement",
+    "label": "Monthly Pension",
+    "status": "active",
+    "amount": 68000,
+    "effectiveDate": "2023-03-01"
+  }
+]

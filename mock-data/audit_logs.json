@@ -1,0 +1,26 @@
+[
+  {
+    "id": "al-001",
+    "actorId": "u-001",
+    "action": "claim.review.started",
+    "targetType": "claim",
+    "targetId": "c-001",
+    "timestamp": "2026-09-05T08:15:00Z"
+  },
+  {
+    "id": "al-002",
+    "actorId": "u-001",
+    "action": "claim.approved",
+    "targetType": "claim",
+    "targetId": "c-003",
+    "timestamp": "2026-07-16T10:42:00Z"
+  },
+  {
+    "id": "al-003",
+    "actorId": "u-002",
+    "action": "personnel.record.updated",
+    "targetType": "personnel",
+    "targetId": "p-002",
+    "timestamp": "2026-09-09T14:03:00Z"
+  }
+]

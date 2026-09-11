@@ -1,0 +1,91 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { PanelLeftClose, PanelLeftOpen, ShieldCheck } from "lucide-react";
+import { useUiStore } from "@/lib/stores/ui-store";
+import { NAV_ITEMS, APP_VERSION } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
+
+/**
+ * Sidebar (SmartContainer) — SSOT Section 2.1/2.2.
+ * Collapse state lives in the Zustand UI store. Collapses to an icon-only
+ * rail; the toggle is a real <button> so it is keyboard-accessible.
+ */
+export function Sidebar() {
+  const pathname = usePathname();
+  const collapsed = useUiStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+
+  return (
+    <aside
+      className={cn(
+        "flex h-full flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-in-out",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
+      <div className="flex items-center gap-2 px-4 py-4">
+        <ShieldCheck className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        {!collapsed && (
+          <span className="truncate text-lg font-semibold tracking-tight">
+            IBTS
+          </span>
+        )}
+      </div>
+
+      <nav aria-label="Primary" className="flex-1 space-y-1 px-2">
+        {NAV_ITEMS.map((item) => {
+          const active =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              title={collapsed ? item.label : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                "hover:bg-sidebar-active/70",
+                active
+                  ? "bg-sidebar-active text-white"
+                  : "text-sidebar-foreground/80",
+                collapsed && "justify-center px-0"
+              )}
+            >
+              <Icon className="h-5 w-5 shrink-0" aria-hidden />
+              {!collapsed && <span className="truncate">{item.label}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="border-t border-white/10 p-2">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-active/70",
+            collapsed && "justify-center px-0"
+          )}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-5 w-5 shrink-0" aria-hidden />
+          ) : (
+            <PanelLeftClose className="h-5 w-5 shrink-0" aria-hidden />
+          )}
+          {!collapsed && <span>Collapse</span>}
+        </button>
+        {!collapsed && (
+          <p className="px-3 pt-2 text-xs text-sidebar-foreground/50">
+            v{APP_VERSION}
+          </p>
+        )}
+      </div>
+    </aside>
+  );
+}

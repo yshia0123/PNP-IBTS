@@ -1,0 +1,34 @@
+[
+  {
+    "id": "u-001",
+    "name": "Alex V. Cruz",
+    "role": "hr_manager",
+    "rank": "PCOL",
+    "division": "Benefits Admin Div, DPRM",
+    "email": "a.cruz@ibts.local"
+  },
+  {
+    "id": "u-002",
+    "name": "Jordan M. Reyes",
+    "role": "admin",
+    "rank": "PBGEN",
+    "division": "Directorate for Personnel & Records Management",
+    "email": "j.reyes@ibts.local"
+  },
+  {
+    "id": "u-003",
+    "name": "Sam T. Bautista",
+    "role": "officer",
+    "rank": "PCPT",
+    "division": "Field Operations Unit",
+    "email": "s.bautista@ibts.local"
+  },
+  {
+    "id": "u-004",
+    "name": "Riza L. Domingo",
+    "role": "retiree",
+    "rank": "PLTCOL",
+    "division": "Retired — Benefits Admin Div",
+    "email": "r.domingo@ibts.local"
+  }
+]

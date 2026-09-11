@@ -1,0 +1,29 @@
+[
+  {
+    "id": "n-001",
+    "userId": "u-001",
+    "type": "action_required",
+    "title": "Dependent Verification Needed",
+    "message": "Verification pending for Maria Cruz (Spouse).",
+    "read": false,
+    "createdAt": "2026-09-05T09:00:00Z"
+  },
+  {
+    "id": "n-002",
+    "userId": "u-001",
+    "type": "alert",
+    "title": "Claim Awaiting Review",
+    "message": "Claim c-001 has been under review for 3 days.",
+    "read": false,
+    "createdAt": "2026-09-08T09:00:00Z"
+  },
+  {
+    "id": "n-003",
+    "userId": "u-001",
+    "type": "info",
+    "title": "Data Sync Complete",
+    "message": "Personnel records synced successfully.",
+    "read": true,
+    "createdAt": "2026-09-11T06:30:00Z"
+  }
+]

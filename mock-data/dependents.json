@@ -1,0 +1,25 @@
+[
+  {
+    "id": "d-001",
+    "personnelId": "p-001",
+    "fullName": "Maria Cruz",
+    "relationship": "spouse",
+    "verificationStatus": "pending",
+    "requestedDate": "2026-09-01"
+  },
+  {
+    "id": "d-002",
+    "personnelId": "p-001",
+    "fullName": "Miguel Cruz",
+    "relationship": "child",
+    "verificationStatus": "verified"
+  },
+  {
+    "id": "d-003",
+    "personnelId": "p-002",
+    "fullName": "Elena Bautista",
+    "relationship": "parent",
+    "verificationStatus": "unverified",
+    "requestedDate": "2026-09-08"
+  }
+]

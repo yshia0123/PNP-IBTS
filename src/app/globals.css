@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/*
+ * IBTS Design System — see PROJECT_SOURCE_OF_TRUTH.md Section 2.3.
+ * Light/dark theming via the `data-theme` attribute (default: light).
+ * Tailwind v4: tokens declared with @theme, semantic vars in :root.
+ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-active: var(--sidebar-active);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+:root {
+  /* Brand ramp (Section 2.3) */
+  --navy-900: #0b1d3a;
+  --navy-700: #132c5c;
+  --blue-500: #2563eb;
+  --success-500: #16a34a;
+  --warning-500: #d97706;
+  --danger-500: #dc2626;
+
+  /* Semantic tokens — light (default) */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --ring: var(--blue-500);
+
+  --sidebar: var(--navy-900);
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-active: var(--navy-700);
+
+  --primary: var(--blue-500);
+  --primary-foreground: #ffffff;
+
+  --success: var(--success-500);
+  --warning: var(--warning-500);
+  --danger: var(--danger-500);
+}
+
+[data-theme="dark"] {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --surface: #101a2e;
+  --surface-foreground: #e2e8f0;
+  --muted: #16223a;
+  --muted-foreground: #94a3b8;
+  --border: #1e293b;
+  --ring: var(--blue-500);
+
+  --sidebar: #06111f;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-active: var(--navy-700);
+
+  --primary: var(--blue-500);
+  --primary-foreground: #ffffff;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+/* Accessible focus rings (WCAG 2.1 AA) */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

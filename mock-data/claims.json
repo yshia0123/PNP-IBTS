@@ -1,0 +1,26 @@
+[
+  {
+    "id": "c-001",
+    "personnelId": "p-001",
+    "benefitId": "b-001",
+    "status": "under_review",
+    "submittedDate": "2026-08-28",
+    "notes": "Reimbursement for hospitalization, July 2026."
+  },
+  {
+    "id": "c-002",
+    "personnelId": "p-002",
+    "benefitId": "b-001",
+    "status": "submitted",
+    "submittedDate": "2026-09-02"
+  },
+  {
+    "id": "c-003",
+    "personnelId": "p-003",
+    "benefitId": "b-004",
+    "status": "approved",
+    "submittedDate": "2026-07-15",
+    "reviewedBy": "u-001",
+    "notes": "Pension adjustment approved."
+  }
+]
