@@ -236,6 +236,130 @@ export const handlers = [
     return HttpResponse.json(db.personnel);
   }),
 
+  // Admin creates a new account (officer / retiree / dependent). Creates a
+  // user and, for personnel-backed roles, a personnel record; for dependents,
+  // a dependent record linked to a sponsor.
+  http.post("/api/personnel", async ({ request }) => {
+    await latency();
+    const actorId = currentUserId(request);
+    const body = (await request.json().catch(() => ({}))) as {
+      fullName?: string;
+      email?: string;
+      role?: "officer" | "retiree" | "dependent";
+      rank?: string;
+      serviceYears?: number;
+      joinDate?: string;
+      relationship?: "spouse" | "child" | "parent" | "other";
+      sponsorPersonnelId?: string;
+    };
+
+    if (!body.fullName || !body.email || !body.role) {
+      return HttpResponse.json(
+        { message: "Name, email, and role are required." },
+        { status: 422 }
+      );
+    }
+    if (db.users.some((u) => u.email.toLowerCase() === body.email!.toLowerCase())) {
+      return HttpResponse.json(
+        { message: "An account with that email already exists." },
+        { status: 409 }
+      );
+    }
+
+    const userId = `u-${Date.now()}`;
+    db.users.unshift({
+      id: userId,
+      name: body.fullName,
+      role: body.role,
+      rank: body.rank,
+      email: body.email,
+    });
+
+    let createdPersonnel = null;
+    if (body.role === "officer" || body.role === "retiree") {
+      createdPersonnel = {
+        id: `p-${Date.now()}`,
+        userId,
+        fullName: body.fullName,
+        rank: body.rank ?? "N/A",
+        serviceYears: body.serviceYears ?? 0,
+        joinDate: body.joinDate ?? new Date().toISOString().slice(0, 10),
+        status: (body.role === "retiree" ? "retired" : "active") as
+          | "active"
+          | "retired"
+          | "separated",
+        promotionHistory: [],
+      };
+      db.personnel.unshift(createdPersonnel);
+    } else if (body.role === "dependent") {
+      db.dependents.unshift({
+        id: `d-${Date.now()}`,
+        personnelId: body.sponsorPersonnelId ?? "",
+        fullName: body.fullName,
+        relationship: body.relationship ?? "other",
+        verificationStatus: "unverified",
+        requestedDate: new Date().toISOString().slice(0, 10),
+      });
+    }
+
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId,
+      action: `account.created.${body.role}`,
+      targetType: "user",
+      targetId: userId,
+      timestamp: new Date().toISOString(),
+    });
+
+    return HttpResponse.json(
+      { user: db.users[0], personnel: createdPersonnel },
+      { status: 201 }
+    );
+  }),
+
+  // Admin / HR edits a personnel record.
+  http.patch("/api/personnel/:id", async ({ params, request }) => {
+    await latency();
+    const { id } = params as { id: string };
+    const body = (await request.json().catch(() => ({}))) as Partial<{
+      fullName: string;
+      rank: string;
+      serviceYears: number;
+      joinDate: string;
+      status: "active" | "retired" | "separated";
+    }>;
+    const record = db.personnel.find((p) => p.id === id);
+    if (!record) {
+      return HttpResponse.json(
+        { message: "Personnel record not found." },
+        { status: 404 }
+      );
+    }
+    if (body.fullName !== undefined) record.fullName = body.fullName;
+    if (body.rank !== undefined) record.rank = body.rank;
+    if (body.serviceYears !== undefined) record.serviceYears = body.serviceYears;
+    if (body.joinDate !== undefined) record.joinDate = body.joinDate;
+    if (body.status !== undefined) record.status = body.status;
+
+    // Keep the linked user's display name/rank in sync.
+    const user = db.users.find((u) => u.id === record.userId);
+    if (user) {
+      if (body.fullName !== undefined) user.name = body.fullName;
+      if (body.rank !== undefined) user.rank = body.rank;
+    }
+
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId: currentUserId(request),
+      action: "personnel.record.updated",
+      targetType: "personnel",
+      targetId: record.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return HttpResponse.json(record);
+  }),
+
   // ---- Claims module (Phase 3) -----------------------------------------
   http.get("/api/claims", async ({ request }) => {
     await latency();

@@ -133,10 +133,6 @@ export function LoginPage() {
             </ul>
           </details>
         </div>
-
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Prototype only — mock authentication, not a real security boundary.
-        </p>
       </div>
     </div>
   );
