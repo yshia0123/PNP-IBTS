@@ -5,6 +5,7 @@ import claimsJson from "../../mock-data/claims.json";
 import dependentsJson from "../../mock-data/dependents.json";
 import auditLogsJson from "../../mock-data/audit_logs.json";
 import notificationsJson from "../../mock-data/notifications.json";
+import credentialsJson from "../../mock-data/credentials.json";
 
 import type {
   AuditLog,
@@ -22,6 +23,11 @@ import type {
  * real backend within a session (SSOT Section 3.3). Reloading the page resets
  * state, matching the "local, resettable data" goal (Section 1.3).
  */
+interface Credential {
+  email: string;
+  password: string;
+}
+
 export const db = {
   users: usersJson as User[],
   personnel: personnelJson as Personnel[],
@@ -30,6 +36,8 @@ export const db = {
   dependents: dependentsJson as Dependent[],
   auditLogs: auditLogsJson as AuditLog[],
   notifications: notificationsJson as Notification[],
+  // Mock credentials — prototype auth only, never real security (Section 1.4).
+  credentials: credentialsJson as Credential[],
 };
 
 /** Simulate realistic network latency (SSOT Section 3.3: 300–800ms). */

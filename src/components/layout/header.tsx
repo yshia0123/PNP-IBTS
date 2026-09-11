@@ -2,34 +2,40 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import { Bell, Search, UserCircle2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, Search, UserCircle2, LogOut } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const ROLES: { value: Role; label: string }[] = [
-  { value: "admin", label: "Admin" },
-  { value: "hr_manager", label: "HR Manager" },
-  { value: "officer", label: "Officer" },
-  { value: "retiree", label: "Retiree" },
-  { value: "dependent", label: "Dependent" },
-];
+const ROLE_LABEL: Record<Role, string> = {
+  admin: "Admin",
+  hr_manager: "HR Manager",
+  officer: "Officer",
+  retiree: "Retiree",
+  dependent: "Dependent",
+};
 
 /**
  * Header (SmartContainer) — SSOT Section 2.1/2.2.
- * The demo role switcher swaps the current user (one representative account
- * per role), which drives data scoping and nav/action gating (Section 2.4).
+ * Shows the signed-in user and a logout action (mock auth, Section 1.4).
  */
 export function Header() {
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
   const currentUser = useSessionStore((s) => s.currentUser);
-  const setRole = useSessionStore((s) => s.setRole);
+  const logout = useSessionStore((s) => s.logout);
+  const router = useRouter();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
+  };
 
   return (
     <header className="flex h-14 items-center gap-4 border-b border-border bg-surface px-4">
@@ -61,23 +67,6 @@ export function Header() {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        {/* Demo-only role switcher (SSOT Section 1.4 / 2.4). */}
-        <label className="sr-only" htmlFor="role-switcher">
-          Switch role
-        </label>
-        <select
-          id="role-switcher"
-          value={currentUser.role}
-          onChange={(e) => setRole(e.target.value as Role)}
-          className="rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground focus:outline-none"
-        >
-          {ROLES.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-
         <button
           type="button"
           aria-label={
@@ -96,9 +85,7 @@ export function Header() {
         >
           <Bell className="h-5 w-5" aria-hidden />
           <span
-            className={cn(
-              "absolute right-1 top-1 flex h-2 w-2 rounded-full bg-danger"
-            )}
+            className="absolute right-1 top-1 flex h-2 w-2 rounded-full bg-danger"
             aria-hidden
           />
         </button>
@@ -107,14 +94,26 @@ export function Header() {
           <UserCircle2 className="h-7 w-7 text-muted-foreground" aria-hidden />
           <div className="hidden text-left sm:block">
             <p className="text-sm font-medium leading-tight">
-              {currentUser.name}
+              {currentUser?.name}
             </p>
             <p className="text-xs leading-tight text-muted-foreground">
-              {currentUser.rank ? `${currentUser.rank} · ` : ""}
-              {ROLES.find((r) => r.value === currentUser.role)?.label}
+              {currentUser?.rank ? `${currentUser.rank} · ` : ""}
+              {currentUser ? ROLE_LABEL[currentUser.role] : ""}
             </p>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Sign out"
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          )}
+        >
+          <LogOut className="h-4 w-4" aria-hidden />
+          <span className="hidden sm:inline">Sign out</span>
+        </button>
       </div>
     </header>
   );

@@ -11,13 +11,13 @@ export async function apiFetch<T>(
   input: string,
   init?: RequestInit
 ): Promise<T> {
-  const currentUserId = useSessionStore.getState().currentUser.id;
+  const currentUserId = useSessionStore.getState().currentUser?.id;
 
   const res = await fetch(input, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "x-demo-user-id": currentUserId,
+      ...(currentUserId ? { "x-demo-user-id": currentUserId } : {}),
       ...init?.headers,
     },
   });

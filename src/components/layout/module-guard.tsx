@@ -16,7 +16,7 @@ export function ModuleGuard({
   module: ModuleKey;
   children: React.ReactNode;
 }) {
-  const role = useSessionStore((s) => s.currentUser.role);
+  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
 
   if (!canAccessModule(role, module)) {
     return (

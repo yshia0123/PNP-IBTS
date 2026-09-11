@@ -11,7 +11,7 @@ export interface ClaimRow extends Claim {
 
 export function useClaims() {
   // Keyed by user so switching role refetches the scoped list.
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useQuery({
     queryKey: ["claims", "list", userId],
     queryFn: () => apiFetch<ClaimRow[]>("/api/claims"),
@@ -20,7 +20,7 @@ export function useClaims() {
 
 /** Benefits belonging to the current user — options for a new claim request. */
 export function useMyBenefitOptions() {
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useQuery({
     queryKey: ["claims", "my-benefits", userId],
     queryFn: () => apiFetch<Benefit[]>("/api/personnel/me/benefits"),

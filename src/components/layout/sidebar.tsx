@@ -19,7 +19,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
-  const role = useSessionStore((s) => s.currentUser.role);
+  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
 
   const visibleItems = NAV_ITEMS.filter((item) =>
     canAccessModule(role, item.key)

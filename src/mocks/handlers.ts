@@ -34,6 +34,43 @@ export const handlers = [
     });
   }),
 
+  // ---- Auth (mock — prototype only, not real security) -----------------
+  http.post("/api/session/login", async ({ request }) => {
+    await latency();
+    const body = (await request.json().catch(() => ({}))) as {
+      email?: string;
+      password?: string;
+    };
+    const email = (body.email ?? "").trim().toLowerCase();
+    const password = body.password ?? "";
+
+    const cred = db.credentials.find((c) => c.email.toLowerCase() === email);
+    if (!cred || cred.password !== password) {
+      return HttpResponse.json(
+        { message: "Invalid email or password." },
+        { status: 401 }
+      );
+    }
+    const user = db.users.find((u) => u.email.toLowerCase() === email);
+    if (!user) {
+      return HttpResponse.json(
+        { message: "Account not found." },
+        { status: 404 }
+      );
+    }
+
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId: user.id,
+      action: "session.login",
+      targetType: "session",
+      targetId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return HttpResponse.json(user);
+  }),
+
   // ---- Current user ----------------------------------------------------
   http.get("/api/session/me", async ({ request }) => {
     await latency();
@@ -109,6 +146,87 @@ export const handlers = [
     }
     db.notifications.splice(index, 1);
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // ---- Dependent self-service view -------------------------------------
+  // Resolves the dependent record for the signed-in dependent user, plus
+  // their sponsor and the beneficiary benefits they may be entitled to.
+  http.get("/api/dependents/me", async ({ request }) => {
+    await latency();
+    if (shouldFail()) return maybeFail("Failed to load verification status.");
+
+    const user = db.users.find((u) => u.id === currentUserId(request));
+    if (!user) {
+      return HttpResponse.json({ message: "User not found." }, { status: 404 });
+    }
+
+    // Match the dependent record by name (prototype linkage).
+    const dependent = db.dependents.find(
+      (d) => d.fullName.toLowerCase() === user.name.toLowerCase()
+    );
+    if (!dependent) {
+      return HttpResponse.json(
+        { message: "No dependent record linked to this account." },
+        { status: 404 }
+      );
+    }
+
+    const sponsor = db.personnel.find((p) => p.id === dependent.personnelId);
+    // Insurance / death benefits are the ones relevant to a beneficiary.
+    const beneficiaryBenefits = db.benefits.filter(
+      (b) => b.personnelId === dependent.personnelId && b.type === "insurance"
+    );
+
+    return HttpResponse.json({
+      dependent,
+      sponsorName: sponsor?.fullName ?? null,
+      sponsorRank: sponsor?.rank ?? null,
+      beneficiaryBenefits,
+    });
+  }),
+
+  // Dependent requests re-verification (resubmits their documents).
+  http.post("/api/dependents/me/verify", async ({ request }) => {
+    await latency();
+    const user = db.users.find((u) => u.id === currentUserId(request));
+    const dependent = user
+      ? db.dependents.find(
+          (d) => d.fullName.toLowerCase() === user.name.toLowerCase()
+        )
+      : undefined;
+    if (!dependent) {
+      return HttpResponse.json(
+        { message: "No dependent record linked to this account." },
+        { status: 404 }
+      );
+    }
+
+    dependent.verificationStatus = "pending";
+    dependent.requestedDate = new Date().toISOString().slice(0, 10);
+
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId: user?.id ?? "unknown",
+      action: "dependent.verification_requested",
+      targetType: "dependent",
+      targetId: dependent.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Notify admins that a dependent verification needs review.
+    for (const admin of db.users.filter((u) => u.role === "admin")) {
+      db.notifications.unshift({
+        id: `n-${Date.now()}-${admin.id}`,
+        userId: admin.id,
+        type: "action_required",
+        title: "Dependent Verification Requested",
+        message: `${dependent.fullName} resubmitted documents for verification.`,
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    return HttpResponse.json(dependent);
   }),
 
   // ---- Personnel module (Phase 3) --------------------------------------

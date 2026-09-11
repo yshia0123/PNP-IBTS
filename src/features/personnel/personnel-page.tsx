@@ -22,7 +22,7 @@ const STATUS_VARIANT = {
 
 export function PersonnelPage() {
   const { data, isLoading, isError, refetch } = usePersonnel();
-  const role = useSessionStore((s) => s.currentUser.role);
+  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
   const canWrite = can(role, "personnel.write");
 
   const columns: Column<Personnel>[] = [

@@ -26,7 +26,7 @@ export const dashboardKeys = {
 };
 
 export function useMyPersonnel() {
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useQuery({
     queryKey: dashboardKeys.personnel(userId),
     queryFn: fetchMyPersonnel,
@@ -34,7 +34,7 @@ export function useMyPersonnel() {
 }
 
 export function useMyBenefits() {
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useQuery({
     queryKey: dashboardKeys.benefits(userId),
     queryFn: fetchMyBenefits,
@@ -42,7 +42,7 @@ export function useMyBenefits() {
 }
 
 export function useNotifications() {
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useQuery({
     queryKey: dashboardKeys.notifications(userId),
     queryFn: fetchNotifications,
@@ -51,7 +51,7 @@ export function useNotifications() {
 
 export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useMutation({
     mutationFn: (id: string) => markNotificationRead(id, true),
     onSuccess: () => {
@@ -64,7 +64,7 @@ export function useMarkNotificationRead() {
 
 export function useDismissNotification() {
   const queryClient = useQueryClient();
-  const userId = useSessionStore((s) => s.currentUser.id);
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
   return useMutation({
     mutationFn: (id: string) => dismissNotification(id),
     onSuccess: () => {
