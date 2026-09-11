@@ -23,6 +23,12 @@ const STATUS_VARIANT = {
   separated: "neutral",
 } as const;
 
+const STATUS_LABEL: Record<Personnel["status"], string> = {
+  active: "Active",
+  retired: "Retired",
+  separated: "Separated",
+};
+
 export function PersonnelPage() {
   const { data, isLoading, isError, refetch } = usePersonnel();
   const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
@@ -58,7 +64,9 @@ export function PersonnelPage() {
       header: "Status",
       sortable: true,
       cell: (p) => (
-        <Badge variant={STATUS_VARIANT[p.status]}>{p.status}</Badge>
+        <Badge variant={STATUS_VARIANT[p.status]}>
+          {STATUS_LABEL[p.status]}
+        </Badge>
       ),
     },
   ];

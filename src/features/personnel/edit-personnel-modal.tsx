@@ -121,7 +121,7 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
             >
               <option value="active">Active</option>
               <option value="retired">Retired</option>
-              <option value="separated">Separated</option>
+              <option value="separated">Separated (left service)</option>
             </select>
           </Field>
         </div>
