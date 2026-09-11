@@ -119,12 +119,23 @@ export const handlers = [
   }),
 
   // ---- Claims module (Phase 3) -----------------------------------------
-  http.get("/api/claims", async () => {
+  http.get("/api/claims", async ({ request }) => {
     await latency();
     if (shouldFail()) return maybeFail("Failed to load claims.");
 
+    const userId = currentUserId(request);
+    const user = db.users.find((u) => u.id === userId);
+    // Admin & HR manager see all claims; everyone else sees only their own
+    // (SSOT Section 2.4).
+    const seesAll = user?.role === "admin" || user?.role === "hr_manager";
+    const myPersonnel = personnelForUser(userId);
+
+    const visible = seesAll
+      ? db.claims
+      : db.claims.filter((c) => c.personnelId === myPersonnel?.id);
+
     // Enrich each claim with the claimant name and benefit label for display.
-    const enriched = db.claims.map((claim) => {
+    const enriched = visible.map((claim) => {
       const person = db.personnel.find((p) => p.id === claim.personnelId);
       const benefit = db.benefits.find((b) => b.id === claim.benefitId);
       return {
@@ -134,6 +145,75 @@ export const handlers = [
       };
     });
     return HttpResponse.json(enriched);
+  }),
+
+  // Submit a new claim request (officer / retiree). Creates a `submitted`
+  // claim tied to the current user's personnel record and notifies admins.
+  http.post("/api/claims", async ({ request }) => {
+    await latency();
+    if (shouldFail()) return maybeFail("Failed to submit claim.");
+
+    const userId = currentUserId(request);
+    const person = personnelForUser(userId);
+    if (!person) {
+      return HttpResponse.json(
+        { message: "No personnel record linked to this account." },
+        { status: 400 }
+      );
+    }
+
+    const body = (await request.json().catch(() => ({}))) as {
+      benefitId?: string;
+      notes?: string;
+    };
+    if (!body.benefitId) {
+      return HttpResponse.json(
+        { message: "A benefit must be selected." },
+        { status: 422 }
+      );
+    }
+
+    const newClaim = {
+      id: `c-${Date.now()}`,
+      personnelId: person.id,
+      benefitId: body.benefitId,
+      status: "submitted" as const,
+      submittedDate: new Date().toISOString().slice(0, 10),
+      notes: body.notes,
+    };
+    db.claims.unshift(newClaim);
+
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId: userId,
+      action: "claim.submitted",
+      targetType: "claim",
+      targetId: newClaim.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Notify every admin that a new claim needs attention.
+    for (const admin of db.users.filter((u) => u.role === "admin")) {
+      db.notifications.unshift({
+        id: `n-${Date.now()}-${admin.id}`,
+        userId: admin.id,
+        type: "action_required",
+        title: "New Claim Submitted",
+        message: `${person.fullName} submitted a new claim (${newClaim.id}).`,
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    const benefit = db.benefits.find((b) => b.id === newClaim.benefitId);
+    return HttpResponse.json(
+      {
+        ...newClaim,
+        claimantName: person.fullName,
+        benefitLabel: benefit?.label ?? newClaim.benefitId,
+      },
+      { status: 201 }
+    );
   }),
 
   // Decision on a claim (approve / reject / move to review).

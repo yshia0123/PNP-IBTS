@@ -7,8 +7,10 @@ import { useSessionStore } from "@/lib/stores/session-store";
 import { can } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import type { ClaimStatus } from "@/lib/types";
+import { Plus } from "lucide-react";
 import { useClaims, useDecideClaim, type ClaimRow } from "./hooks";
 import { ClaimWorkflowModal } from "./claim-workflow-modal";
+import { ClaimRequestModal } from "./claim-request-modal";
 
 /**
  * ClaimsPage (SSOT Section 2.2, Phase 3 step 10).
@@ -32,9 +34,11 @@ export function ClaimsPage() {
   const decide = useDecideClaim();
   const role = useSessionStore((s) => s.currentUser.role);
   const canDecide = can(role, "claims.decide");
+  const canSubmit = can(role, "claims.submit");
 
   const [active, setActive] = useState<ClaimRow | null>(null);
   const [open, setOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
 
   const openClaim = (claim: ClaimRow) => {
     setActive(claim);
@@ -65,15 +69,26 @@ export function ClaimsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Claims Management
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {canDecide
-            ? "Review claims and record approve/reject decisions."
-            : "View the status of submitted claims."}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            {canDecide ? "Claims Management" : "My Claims"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {canDecide
+              ? "Review all submitted claims and record approve/reject decisions."
+              : "Request a new claim and track the status of your requests."}
+          </p>
+        </div>
+        {canSubmit && (
+          <button
+            type="button"
+            onClick={() => setRequestOpen(true)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            <Plus className="h-4 w-4" aria-hidden /> New Claim Request
+          </button>
+        )}
       </div>
 
       <DataTable
@@ -84,7 +99,11 @@ export function ClaimsPage() {
         isError={isError}
         onRetry={() => refetch()}
         filterPlaceholder="Filter by claimant, benefit, status..."
-        emptyMessage="No claims match your filter."
+        emptyMessage={
+          canDecide
+            ? "No claims match your filter."
+            : "You haven't submitted any claims yet."
+        }
         rowActions={(claim) => (
           <button
             type="button"
@@ -102,6 +121,11 @@ export function ClaimsPage() {
         onClose={() => setOpen(false)}
         decide={decide}
         canDecide={canDecide}
+      />
+
+      <ClaimRequestModal
+        open={requestOpen}
+        onClose={() => setRequestOpen(false)}
       />
     </div>
   );
