@@ -8,7 +8,12 @@ import { can } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import type { ClaimStatus } from "@/lib/types";
 import { Plus } from "lucide-react";
-import { useClaims, useDecideClaim, type ClaimRow } from "./hooks";
+import {
+  useClaims,
+  useDecideClaim,
+  useStartReview,
+  type ClaimRow,
+} from "./hooks";
 import { ClaimWorkflowModal } from "./claim-workflow-modal";
 import { ClaimRequestModal } from "./claim-request-modal";
 
@@ -31,17 +36,22 @@ const STATUS_VARIANT: Record<
 
 export function ClaimsPage() {
   const { data, isLoading, isError, refetch } = useClaims();
+  const startReview = useStartReview();
   const decide = useDecideClaim();
   const role = useSessionStore((s) => s.currentUser.role);
   const canDecide = can(role, "claims.decide");
   const canSubmit = can(role, "claims.submit");
 
-  const [active, setActive] = useState<ClaimRow | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
 
+  // Derive the active claim from live query data so the modal reflects status
+  // changes (e.g. after "Start Review") once the list refetches.
+  const active = data?.find((c) => c.id === activeId) ?? null;
+
   const openClaim = (claim: ClaimRow) => {
-    setActive(claim);
+    setActiveId(claim.id);
     setOpen(true);
   };
 
@@ -122,7 +132,11 @@ export function ClaimsPage() {
       <ClaimWorkflowModal
         claim={active}
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={() => {
+          setOpen(false);
+          setActiveId(null);
+        }}
+        startReview={startReview}
         decide={decide}
         canDecide={canDecide}
       />

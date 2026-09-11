@@ -1,6 +1,7 @@
 import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 import { StatusBar } from "./status-bar";
+import { Toaster } from "@/components/ui/toaster";
 
 /**
  * Root shell composition (SSOT Section 2.1).
@@ -22,6 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto p-6">{children}</main>
         <StatusBar />
       </div>
+      <Toaster />
     </div>
   );
 }

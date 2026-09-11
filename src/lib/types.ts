@@ -59,6 +59,7 @@ export interface Claim {
   status: ClaimStatus;
   submittedDate: string;
   reviewedBy?: string;
+  reviewedAt?: string; // ISO timestamp when review started
   notes?: string;
 }
 

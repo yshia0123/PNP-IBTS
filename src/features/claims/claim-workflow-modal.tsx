@@ -1,17 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, PlayCircle } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/format";
-import type { ClaimRow, useDecideClaim } from "./hooks";
+import { formatDate, formatDateTime } from "@/lib/format";
+import { toast } from "@/lib/stores/toast-store";
+import { cn } from "@/lib/utils";
+import type { ClaimRow, useDecideClaim, useStartReview } from "./hooks";
 import type { ClaimStatus } from "@/lib/types";
 
 /**
- * ClaimWorkflowModal (SSOT Section 2.2, Phase 3 step 10).
- * Multi-step workflow: Review → Decision → Done. Local step state now; the
- * form is upgraded to React Hook Form + Zod in Phase 4.
+ * ClaimWorkflowModal (SSOT Section 2.2, Phase 3/4).
+ *
+ * The modal adapts to the claim's current status:
+ *  - submitted:     Step 1 inactive; primary action "Start Review" (submitted
+ *                   -> under_review, stamps reviewedAt, toast, refresh).
+ *  - under_review:  Step 1 active; shows "Review Started"; primary action
+ *                   "Proceed to Decision" -> Step 2 (approve / reject).
+ *  - decided:       read-only; no primary action.
  */
 type Step = "review" | "decision" | "done";
 
@@ -19,6 +26,7 @@ interface Props {
   claim: ClaimRow | null;
   open: boolean;
   onClose: () => void;
+  startReview: ReturnType<typeof useStartReview>;
   decide: ReturnType<typeof useDecideClaim>;
   canDecide: boolean;
 }
@@ -34,13 +42,11 @@ const STATUS_VARIANT: Record<
   rejected: "danger",
 };
 
-/** Statuses that can still receive an approve/reject decision. */
-const DECIDABLE_STATUSES: ClaimStatus[] = ["submitted", "under_review"];
-
 export function ClaimWorkflowModal({
   claim,
   open,
   onClose,
+  startReview,
   decide,
   canDecide,
 }: Props) {
@@ -49,7 +55,13 @@ export function ClaimWorkflowModal({
 
   if (!claim) return null;
 
-  const isDecidable = DECIDABLE_STATUSES.includes(claim.status);
+  const isSubmitted = claim.status === "submitted";
+  const isUnderReview = claim.status === "under_review";
+  const isDecided = claim.status === "approved" || claim.status === "rejected";
+
+  // Step 1 is "active" once review has started (under_review) or we've moved on.
+  const step1Active = step !== "review" || isUnderReview || isDecided;
+  const step2Active = step === "decision" || step === "done";
 
   const handleClose = () => {
     setStep("review");
@@ -57,31 +69,71 @@ export function ClaimWorkflowModal({
     onClose();
   };
 
+  const handleStartReview = () => {
+    startReview.mutate(claim.id, {
+      onSuccess: () => {
+        toast.success(
+          "Claim status updated to Under Review",
+          `${claim.id} is now assigned to you for review.`
+        );
+        // Stay on the review step; the refreshed claim (now under_review) will
+        // render the active Step 1 and the "Proceed to Decision" action.
+      },
+      onError: (err) =>
+        toast.error("Couldn't start review", (err as Error).message),
+    });
+  };
+
   const submitDecision = (status: ClaimStatus) => {
     decide.mutate(
       { id: claim.id, status, notes },
-      { onSuccess: () => setStep("done") }
+      {
+        onSuccess: () => {
+          setStep("done");
+          toast.success(
+            status === "approved" ? "Claim approved" : "Claim rejected",
+            `${claim.id} decision recorded.`
+          );
+        },
+        onError: (err) =>
+          toast.error("Couldn't record decision", (err as Error).message),
+      }
     );
   };
+
+  const steps: { key: Step; label: string; active: boolean }[] = [
+    { key: "review", label: "Review", active: step1Active },
+    { key: "decision", label: "Decision", active: step2Active },
+    { key: "done", label: "Done", active: step === "done" },
+  ];
 
   return (
     <Modal open={open} onClose={handleClose} title={`Claim ${claim.id}`}>
       {/* Step indicator */}
       <ol className="mb-4 flex items-center gap-2 text-xs">
-        {(["review", "decision", "done"] as Step[]).map((s, i) => (
-          <li key={s} className="flex items-center gap-2">
+        {steps.map((s, i) => (
+          <li key={s.key} className="flex items-center gap-2">
             <span
-              className={
-                "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium " +
-                (step === s
+              className={cn(
+                "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
+                s.active
                   ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground")
-              }
+                  : "bg-muted text-muted-foreground"
+              )}
             >
               {i + 1}
             </span>
-            <span className="capitalize text-muted-foreground">{s}</span>
-            {i < 2 && <span className="text-muted-foreground">→</span>}
+            <span
+              className={cn(
+                "capitalize",
+                s.active ? "font-medium text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {s.label}
+            </span>
+            {i < steps.length - 1 && (
+              <span className="text-muted-foreground">→</span>
+            )}
           </li>
         ))}
       </ol>
@@ -115,6 +167,23 @@ export function ClaimWorkflowModal({
                 </Badge>
               </dd>
             </div>
+            {/* Review metadata appears once review has started. */}
+            {(isUnderReview || isDecided) && claim.reviewedAt && (
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Review Started</dt>
+                <dd className="font-medium text-foreground">
+                  {formatDateTime(claim.reviewedAt)}
+                </dd>
+              </div>
+            )}
+            {(isUnderReview || isDecided) && claim.reviewedBy && (
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Assigned Reviewer</dt>
+                <dd className="font-medium text-foreground">
+                  {claim.reviewedBy}
+                </dd>
+              </div>
+            )}
             {claim.notes && (
               <div>
                 <dt className="text-muted-foreground">Notes</dt>
@@ -122,12 +191,14 @@ export function ClaimWorkflowModal({
               </div>
             )}
           </dl>
-          {canDecide && !isDecidable && (
+
+          {canDecide && isDecided && (
             <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
               This claim is {claim.status.replace("_", " ")} — a final decision
               has already been recorded, so no further action is available.
             </p>
           )}
+
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
@@ -136,13 +207,26 @@ export function ClaimWorkflowModal({
             >
               Close
             </button>
-            {canDecide && isDecidable && (
+
+            {canDecide && isSubmitted && (
+              <button
+                type="button"
+                disabled={startReview.isPending}
+                onClick={handleStartReview}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+              >
+                <PlayCircle className="h-4 w-4" aria-hidden />
+                {startReview.isPending ? "Starting…" : "Start Review"}
+              </button>
+            )}
+
+            {canDecide && isUnderReview && (
               <button
                 type="button"
                 onClick={() => setStep("decision")}
                 className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90"
               >
-                Proceed to decision
+                Proceed to Decision
               </button>
             )}
           </div>

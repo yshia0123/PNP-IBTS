@@ -216,6 +216,44 @@ export const handlers = [
     );
   }),
 
+  // Start review: transition submitted -> under_review and stamp reviewedAt.
+  http.patch("/api/claims/:id/start-review", async ({ params, request }) => {
+    await latency();
+    const { id } = params as { id: string };
+    const claim = db.claims.find((c) => c.id === id);
+    if (!claim) {
+      return HttpResponse.json({ message: "Claim not found." }, { status: 404 });
+    }
+    if (claim.status !== "submitted") {
+      return HttpResponse.json(
+        { message: `Cannot start review on a ${claim.status} claim.` },
+        { status: 409 }
+      );
+    }
+
+    const actorId = currentUserId(request);
+    claim.status = "under_review";
+    claim.reviewedBy = actorId;
+    claim.reviewedAt = new Date().toISOString();
+
+    db.auditLogs.unshift({
+      id: `al-${Date.now()}`,
+      actorId,
+      action: "claim.review_started",
+      targetType: "claim",
+      targetId: claim.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    const person = db.personnel.find((p) => p.id === claim.personnelId);
+    const benefit = db.benefits.find((b) => b.id === claim.benefitId);
+    return HttpResponse.json({
+      ...claim,
+      claimantName: person?.fullName ?? claim.personnelId,
+      benefitLabel: benefit?.label ?? claim.benefitId,
+    });
+  }),
+
   // Decision on a claim (approve / reject / move to review).
   http.patch("/api/claims/:id", async ({ params, request }) => {
     await latency();

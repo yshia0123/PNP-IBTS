@@ -5,6 +5,8 @@
     "benefitId": "b-001",
     "status": "under_review",
     "submittedDate": "2026-08-28",
+    "reviewedBy": "u-001",
+    "reviewedAt": "2026-08-29T09:15:00Z",
     "notes": "Reimbursement for hospitalization, July 2026."
   },
   {

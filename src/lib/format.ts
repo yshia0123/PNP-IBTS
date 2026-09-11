@@ -47,3 +47,16 @@ export function formatDate(iso: string): string {
     day: "numeric",
   });
 }
+
+/** Format an ISO timestamp as e.g. "Aug 29, 2026, 9:15 AM". */
+export function formatDateTime(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}

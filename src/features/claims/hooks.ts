@@ -27,6 +27,20 @@ export function useMyBenefitOptions() {
   });
 }
 
+export function useStartReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<ClaimRow>(`/api/claims/${id}/start-review`, {
+        method: "PATCH",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["claims", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+    },
+  });
+}
+
 export interface ClaimDecision {
   id: string;
   status: ClaimStatus;
