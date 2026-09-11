@@ -30,7 +30,8 @@ the Role-Based View Matrix (SSOT Section 2.4).
 | Retiree | r.domingo@ibts.local / retiree123 | Dashboard, Claims (own), Retirees, Settings |
 | Dependent | m.cruz@ibts.local / dependent123 | Dashboard (verification focus), Settings |
 
-See [`README-DEMO.md`](./README-DEMO.md) for a step-by-step walkthrough.
+Live demo: **https://pnp-ibts.vercel.app** · See
+[`README-DEMO.md`](./README-DEMO.md) for the end-user tutorial.
 
 ## Tech Stack
 
@@ -92,20 +93,21 @@ This is a prototype convenience, **not** a real security boundary.
 ## Project Structure
 
 ```
-mock-data/                 # JSON fixtures (users, personnel, benefits, credentials, ...)
-public/                    # static assets + mockServiceWorker.js + pnp-logo.png
+mock-data/                 # JSON fixtures used to seed the Supabase database
+public/                    # static assets + pnp-logo.png
 src/
   app/                     # App Router: layout, login, module routes, error/loading
+    api/                   # Server-side API routes (Supabase-backed)
   components/
     layout/                # Shell: header, sidebar, status-bar, app-shell, auth-gate
     ui/                    # Reusable primitives: card, badge, data-table, modal, toaster, ...
   features/                # Feature-based modules:
                            #   auth, dashboard, personnel, claims, retirees,
                            #   financial, settings, search, notifications
-  lib/                     # types, utils, navigation, permissions, format, stores/
-  mocks/                   # MSW browser worker, handlers, in-memory db
+  lib/                     # types, utils, permissions, format, stores/,
+                           #   supabase-server, db-mappers, api-helpers
 PROJECT_SOURCE_OF_TRUTH.md # architecture single source of truth
-README-DEMO.md             # client-facing demo walkthrough
+README-DEMO.md             # end-user tutorial (also exported as PDF)
 ```
 
 Structure follows the feature-based convention in SSOT Section 6.2.
