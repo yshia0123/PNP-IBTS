@@ -41,11 +41,22 @@ export async function audit(
   });
 }
 
-/** Local YYYY-MM-DD (avoids UTC day-rollback; matches the earlier fix). */
+/**
+ * Today's date as YYYY-MM-DD in Philippine time (Asia/Manila).
+ *
+ * These routes run on serverless functions (Vercel) whose local time is UTC,
+ * so `new Date()` parts would roll the date back a day for PH mornings. Format
+ * against a fixed timezone so the submitted/join/request dates are always the
+ * correct calendar day for the users.
+ */
+const APP_TIME_ZONE = "Asia/Manila";
+
 export function todayLocal(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  // en-CA gives an ISO-style YYYY-MM-DD.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
