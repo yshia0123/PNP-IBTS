@@ -46,8 +46,21 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden p-4">
+      {/* Blurred PNP background image */}
+      <div
+        className="absolute inset-0 scale-110 bg-cover bg-center blur-md"
+        style={{ backgroundImage: "url(/pnp-login-bg.jpg)" }}
+        aria-hidden
+      />
+      {/* Dark overlay for contrast/readability */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "rgba(11, 29, 58, 0.62)" }}
+        aria-hidden
+      />
+
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
           <Image
             src="/pnp-logo.png"
@@ -57,10 +70,10 @@ export function LoginPage() {
             priority
             className="h-14 w-14 object-contain"
           />
-          <h1 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-3 text-xl font-semibold tracking-tight text-white drop-shadow">
             PNP IBTS
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-white/80 drop-shadow">
             Integrated Benefits Tracking System
           </p>
         </div>
