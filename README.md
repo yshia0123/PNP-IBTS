@@ -11,22 +11,26 @@ production backend, authentication, or business logic.
 
 ## Status
 
-**Phases 1–3 complete.** The app shell, tooling, core dashboard, and module
-views (Personnel, Claims, Retirees, Audit) are in place, with the remaining
-modules (Financial, Settings) as guarded placeholders.
+**All five phases complete.** Shell, dashboard, and every module are built:
+Personnel (with add-account + edit), Claims (request + review workflow),
+Retirees, Financial Reports (charts + CSV export), Audit Log, and Settings
+(profile + change password). Phase 5 polish (skeletons, empty states, route
+error boundaries, demo script) is in place.
 
-The prototype ships **one representative user per role** (admin, HR manager,
-officer, retiree, dependent). Use the **role switcher in the header** to change
-the current user — it re-scopes dashboard data and gates which sidebar modules
-and actions are available, per the Role-Based View Matrix (SSOT Section 2.4).
+Access is behind a **mock login** (not real security — SSOT Section 1.4). The
+prototype ships **one representative account per role**; the signed-in role
+re-scopes data and gates which sidebar modules and actions are available, per
+the Role-Based View Matrix (SSOT Section 2.4).
 
-| Role | Demo user | Sees |
+| Role | Demo account | Sees |
 |---|---|---|
-| Admin | Jordan M. Reyes | All modules, full access |
-| HR Manager | Alex V. Cruz | All modules; read-only Financial & Audit |
-| Officer | Sam T. Bautista | Dashboard, Personnel, Claims, Settings |
-| Retiree | Riza L. Domingo | Dashboard, Claims, Retirees, Settings |
-| Dependent | Maria Cruz | Dashboard (verification focus), Settings |
+| Admin | j.reyes@ibts.local / admin123 | All modules, full access |
+| HR Manager | a.cruz@ibts.local / hr123 | All modules; read-only Financial & Audit |
+| Officer | s.bautista@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
+| Retiree | r.domingo@ibts.local / retiree123 | Dashboard, Claims (own), Retirees, Settings |
+| Dependent | m.cruz@ibts.local / dependent123 | Dashboard (verification focus), Settings |
+
+See [`README-DEMO.md`](./README-DEMO.md) for a step-by-step walkthrough.
 
 ## Tech Stack
 
@@ -69,26 +73,39 @@ npm run type-check  # tsc --noEmit
 - The service worker script lives at `public/mockServiceWorker.js`.
 - In development, the worker is started before the app renders (deferred
   mounting) via `src/mocks/msw-init.tsx`, loaded client-side only.
-- A health endpoint (`GET /api/health`) proves interception works — the Status
-  Bar calls it on load and shows the result.
-- Feature handlers are registered in `src/mocks/handlers.ts` as modules are
-  built.
+- Feature handlers are registered in `src/mocks/handlers.ts` (auth, dashboard,
+  personnel, claims, retirees, financial, audit, notifications, search).
+- The mock "database" (`src/mocks/db.ts`) is seeded from the JSON fixtures and
+  **persisted to `localStorage`**, so changes (new claims, decisions, created
+  accounts, notifications) survive reloads and logout/login. To reset, clear
+  the `ibts-mock-db:1` key in localStorage.
 
 Local JSON fixtures live in [`/mock-data`](./mock-data), one file per entity,
 matching the interfaces in `src/lib/types.ts` (SSOT Section 4.1).
 
+## Authentication (mock)
+
+The app is gated by a mock login (`/login`). Credentials are validated against
+`mock-data/credentials.json` via MSW; the session persists to `localStorage`.
+This is a prototype convenience, **not** a real security boundary.
+
 ## Project Structure
 
 ```
-mock-data/                 # JSON fixtures (users, personnel, benefits, ...)
-public/                    # static assets + mockServiceWorker.js
+mock-data/                 # JSON fixtures (users, personnel, benefits, credentials, ...)
+public/                    # static assets + mockServiceWorker.js + pnp-logo.png
 src/
-  app/                     # App Router: layout, page, providers, globals.css
-  components/layout/        # Shell: header, sidebar, status-bar, app-shell
-  features/                # Feature-based modules (dashboard, claims, ...)
-  lib/                     # types, utils, navigation, stores/
-  mocks/                   # MSW browser worker, handlers, init
+  app/                     # App Router: layout, login, module routes, error/loading
+  components/
+    layout/                # Shell: header, sidebar, status-bar, app-shell, auth-gate
+    ui/                    # Reusable primitives: card, badge, data-table, modal, toaster, ...
+  features/                # Feature-based modules:
+                           #   auth, dashboard, personnel, claims, retirees,
+                           #   financial, settings, search, notifications
+  lib/                     # types, utils, navigation, permissions, format, stores/
+  mocks/                   # MSW browser worker, handlers, in-memory db
 PROJECT_SOURCE_OF_TRUTH.md # architecture single source of truth
+README-DEMO.md             # client-facing demo walkthrough
 ```
 
 Structure follows the feature-based convention in SSOT Section 6.2.
