@@ -11,11 +11,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
  */
 const MswInit = dynamic(() => import("@/mocks/msw-init"), { ssr: false });
 
-const MSW_ENABLED = process.env.NODE_ENV === "development";
+/**
+ * The prototype has no real backend — the entire app runs on the MSW mock
+ * layer (SSOT Section 3.3), so the worker must run in production (e.g. Vercel)
+ * too, not just in local dev. To disable it later when a real API exists, set
+ * NEXT_PUBLIC_DISABLE_MSW=true.
+ */
+const MSW_ENABLED = process.env.NEXT_PUBLIC_DISABLE_MSW !== "true";
 
 /**
  * App-wide client providers:
- *  - MSW startup in development (SSOT Section 3.3), gated on worker readiness.
+ *  - MSW startup (SSOT Section 3.3), gated on worker readiness.
  *  - TanStack Query for server-state simulation, caching, and mock fetch
  *    lifecycle.
  */
