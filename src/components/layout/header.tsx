@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { Bell, Search, UserCircle2 } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -32,6 +33,20 @@ export function Header() {
 
   return (
     <header className="flex h-14 items-center gap-4 border-b border-border bg-surface px-4">
+      <div className="flex items-center gap-2">
+        <Image
+          src="/pnp-logo.png"
+          alt="PNP logo"
+          width={28}
+          height={28}
+          priority
+          className="h-7 w-7 shrink-0 object-contain"
+        />
+        <span className="hidden text-sm font-semibold tracking-tight text-foreground sm:inline">
+          PNP IBTS
+        </span>
+      </div>
+
       <div className="relative flex-1 max-w-md">
         <Search
           className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"

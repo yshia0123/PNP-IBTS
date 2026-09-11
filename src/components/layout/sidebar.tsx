@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen, ShieldCheck } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { canAccessModule } from "@/lib/permissions";
@@ -32,10 +33,17 @@ export function Sidebar() {
       )}
     >
       <div className="flex items-center gap-2 px-4 py-4">
-        <ShieldCheck className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        <Image
+          src="/pnp-logo.png"
+          alt="PNP logo"
+          width={32}
+          height={32}
+          priority
+          className="h-8 w-8 shrink-0 rounded-full bg-white/10 object-contain"
+        />
         {!collapsed && (
           <span className="truncate text-lg font-semibold tracking-tight">
-            IBTS
+            PNP IBTS
           </span>
         )}
       </div>

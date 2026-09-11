@@ -10,9 +10,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "IBTS — Integrated Benefits Tracking System",
+  title: "PNP IBTS — Integrated Benefits Tracking System",
   description:
     "Frontend prototype for tracking officer benefits, claims, and personnel records.",
+  icons: {
+    icon: "/pnp-logo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
