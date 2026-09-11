@@ -7,9 +7,8 @@ type Health = "checking" | "ok" | "error";
 
 /**
  * StatusBar (SmartContainer) — SSOT Section 2.1.
- * Health indicator + last data-sync timestamp. It calls the MSW-backed
- * `/api/health` endpoint on mount, which doubles as an end-to-end proof that
- * request interception is working (SSOT Section 3.3 / Phase 1 step 4).
+ * Health indicator + last data-sync timestamp. Calls the `/api/health` route,
+ * which pings Supabase to confirm the backend is reachable.
  */
 export function StatusBar() {
   const [health, setHealth] = useState<Health>("checking");
