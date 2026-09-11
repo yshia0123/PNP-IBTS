@@ -659,6 +659,65 @@ export const handlers = [
     return HttpResponse.json(results.slice(0, 8));
   }),
 
+  // ---- Financial reports (aggregated) ----------------------------------
+  http.get("/api/financial/summary", async () => {
+    await latency();
+    if (shouldFail()) return maybeFail("Failed to load financial summary.");
+
+    const typeLabels: Record<string, string> = {
+      active_benefit: "Active Benefits",
+      retirement: "Retirement",
+      insurance: "Insurance",
+    };
+
+    // Total committed amount per benefit type.
+    const byTypeMap = new Map<string, number>();
+    for (const b of db.benefits) {
+      byTypeMap.set(b.type, (byTypeMap.get(b.type) ?? 0) + (b.amount ?? 0));
+    }
+    const spendByType = Array.from(byTypeMap.entries()).map(([type, total]) => ({
+      type,
+      label: typeLabels[type] ?? type,
+      total,
+    }));
+
+    // Benefit status distribution.
+    const statusMap = new Map<string, number>();
+    for (const b of db.benefits) {
+      statusMap.set(b.status, (statusMap.get(b.status) ?? 0) + 1);
+    }
+    const benefitStatus = Array.from(statusMap.entries()).map(
+      ([status, count]) => ({ status, count })
+    );
+
+    // Claim status counts.
+    const claimMap = new Map<string, number>();
+    for (const c of db.claims) {
+      claimMap.set(c.status, (claimMap.get(c.status) ?? 0) + 1);
+    }
+    const claimStatus = Array.from(claimMap.entries()).map(
+      ([status, count]) => ({ status, count })
+    );
+
+    const totalCommitted = db.benefits.reduce(
+      (sum, b) => sum + (b.amount ?? 0),
+      0
+    );
+    const activeCommitted = db.benefits
+      .filter((b) => b.status === "active")
+      .reduce((sum, b) => sum + (b.amount ?? 0), 0);
+
+    return HttpResponse.json({
+      totalCommitted,
+      activeCommitted,
+      benefitCount: db.benefits.length,
+      claimCount: db.claims.length,
+      spendByType,
+      benefitStatus,
+      claimStatus,
+    });
+  }),
+
   // ---- Audit logs (read-only) ------------------------------------------
   http.get("/api/audit-logs", async () => {
     await latency();
