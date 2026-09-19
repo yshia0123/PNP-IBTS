@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Sun, Moon } from "lucide-react";
 import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { canAccessModule } from "@/lib/permissions";
@@ -19,7 +20,15 @@ export function Sidebar() {
   const pathname = usePathname();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const theme = useUiStore((s) => s.theme);
+  const setTheme = useUiStore((s) => s.setTheme);
   const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
+
+  // Keep the document theme attribute in sync with the store (moved here from
+  // the header when the theme toggle relocated to the sidebar footer).
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const visibleItems = NAV_ITEMS.filter((item) =>
     canAccessModule(role, item.key)
@@ -78,25 +87,45 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-white/10 p-2">
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          aria-expanded={!collapsed}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        <div
           className={cn(
-            "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-active/70",
-            collapsed && "justify-center px-0"
+            "flex items-center gap-1",
+            collapsed ? "flex-col" : "justify-between"
           )}
         >
-          {collapsed ? (
-            <PanelLeftOpen className="h-5 w-5 shrink-0" aria-hidden />
-          ) : (
-            <PanelLeftClose className="h-5 w-5 shrink-0" aria-hidden />
-          )}
-          {!collapsed && <span>Collapse</span>}
-        </button>
+          <button
+            type="button"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            aria-label={
+              theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+            }
+            title={theme === "light" ? "Dark mode" : "Light mode"}
+            className="flex items-center justify-center rounded-md p-2 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-active/70"
+          >
+            {theme === "light" ? (
+              <Moon className="h-5 w-5 shrink-0" aria-hidden />
+            ) : (
+              <Sun className="h-5 w-5 shrink-0" aria-hidden />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="flex items-center justify-center rounded-md p-2 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-active/70"
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-5 w-5 shrink-0" aria-hidden />
+            ) : (
+              <PanelLeftClose className="h-5 w-5 shrink-0" aria-hidden />
+            )}
+          </button>
+        </div>
         {!collapsed && (
-          <p className="px-3 pt-2 text-xs text-sidebar-foreground/50">
+          <p className="px-1 pt-2 text-xs text-sidebar-foreground/50">
             v{APP_VERSION}
           </p>
         )}

@@ -1,0 +1,19 @@
+[
+  { "rank": "NUP", "salaryGrade": 11, "basePay": 20000.0 },
+  { "rank": "PGEN", "salaryGrade": 30, "basePay": 164760.0 },
+  { "rank": "PLTGEN", "salaryGrade": 29, "basePay": 138129.0 },
+  { "rank": "PMGEN", "salaryGrade": 28, "basePay": 113184.0 },
+  { "rank": "PBGEN", "salaryGrade": 27, "basePay": 100162.0 },
+  { "rank": "PCOL", "salaryGrade": 26, "basePay": 88640.0 },
+  { "rank": "PLTCOL", "salaryGrade": 25, "basePay": 78443.0 },
+  { "rank": "PMAJ", "salaryGrade": 24, "basePay": 68810.0 },
+  { "rank": "PCPT", "salaryGrade": 23, "basePay": 62239.0 },
+  { "rank": "PLT", "salaryGrade": 22, "basePay": 54479.0 },
+  { "rank": "PEMS", "salaryGrade": 19, "basePay": 42202.0 },
+  { "rank": "PCMS", "salaryGrade": 18, "basePay": 38236.0 },
+  { "rank": "PSMS", "salaryGrade": 17, "basePay": 37486.0 },
+  { "rank": "PMSG", "salaryGrade": 16, "basePay": 36752.0 },
+  { "rank": "PSSg", "salaryGrade": 14, "basePay": 35325.0 },
+  { "rank": "PCpl", "salaryGrade": 12, "basePay": 33953.0 },
+  { "rank": "Pat", "salaryGrade": 10, "basePay": 32634.0 }
+]

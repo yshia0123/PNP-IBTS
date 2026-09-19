@@ -5,6 +5,7 @@ import {
   FileText,
   UserCheck,
   BarChart3,
+  Wallet,
   ScrollText,
   Settings,
 } from "lucide-react";
@@ -28,6 +29,12 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "claims", label: "Claims", href: "/claims", icon: FileText },
   { key: "retirees", label: "Retirees", href: "/retirees", icon: UserCheck },
   { key: "financial", label: "Financial", href: "/financial", icon: BarChart3 },
+  {
+    key: "compensation",
+    label: "Compensation",
+    href: "/compensation",
+    icon: Wallet,
+  },
   { key: "audit", label: "Audit Log", href: "/audit", icon: ScrollText },
   { key: "settings", label: "Settings", href: "/settings", icon: Settings },
 ];

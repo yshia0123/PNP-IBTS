@@ -38,6 +38,7 @@ export function mapPersonnel(row: any): Personnel {
     joinDate: row.join_date,
     status: row.status,
     promotionHistory: (row.promotion_history ?? []) as PromotionRecord[],
+    compensation: (row.compensation ?? {}) as Personnel["compensation"],
   };
 }
 

@@ -60,3 +60,17 @@ export function formatDateTime(iso: string): string {
     minute: "2-digit",
   });
 }
+
+/**
+ * Format a number as PHP currency with the ₱ symbol, thousands separators, and
+ * exactly 2 decimal places (e.g. ₱20,000.00). Used across the Salary &
+ * Compensation module where cent-level precision matters, unlike the
+ * whole-peso `formatCurrency` used for high-level benefit summaries.
+ */
+export function formatPeso(amount?: number | null): string {
+  if (amount == null || Number.isNaN(amount)) return "—";
+  return `₱${new Intl.NumberFormat("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)}`;
+}

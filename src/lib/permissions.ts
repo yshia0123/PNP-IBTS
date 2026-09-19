@@ -15,6 +15,7 @@ export type ModuleKey =
   | "claims"
   | "retirees"
   | "financial"
+  | "compensation"
   | "audit"
   | "settings";
 
@@ -27,7 +28,9 @@ export type Capability =
   | "retirees.read"
   | "financial.read"
   | "audit.read"
-  | "dependents.verify";
+  | "dependents.verify"
+  | "compensation.read"
+  | "compensation.override"; // edit allowance overrides (Admin-only)
 
 const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
   admin: {
@@ -37,6 +40,7 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "claims",
       "retirees",
       "financial",
+      "compensation",
       "audit",
       "settings",
     ],
@@ -50,6 +54,8 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "financial.read",
       "audit.read",
       "dependents.verify",
+      "compensation.read",
+      "compensation.override", // Admin may edit allowance overrides
     ],
   },
   hr_manager: {
@@ -59,6 +65,7 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "claims",
       "retirees",
       "financial",
+      "compensation",
       "audit",
       "settings",
     ],
@@ -71,6 +78,7 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "financial.read", // read-only (no financial.write capability exists)
       "audit.read", // read-only
       "dependents.verify",
+      "compensation.read", // read-only (no compensation.override)
     ],
   },
   officer: {

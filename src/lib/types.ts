@@ -3,6 +3,7 @@
  * Mirrors PROJECT_SOURCE_OF_TRUTH.md Section 4.1 exactly so the mock JSON,
  * MSW handlers, and (later) a Prisma schema all share one shape.
  */
+import type { CompensationProfileInputs } from "@/lib/compensation";
 
 export type Role = "admin" | "hr_manager" | "officer" | "retiree" | "dependent";
 export type BenefitStatus = "active" | "pending" | "suspended" | "expired";
@@ -39,6 +40,13 @@ export interface Personnel {
   joinDate: string; // ISO date
   promotionHistory: PromotionRecord[];
   status: "active" | "retired" | "separated";
+  /**
+   * Admin-entered situational compensation inputs (Salary & Compensation
+   * module). Computed bonuses/allowances/pensions are derived on read from
+   * these inputs plus the person's rank and service years — not stored.
+   * Optional so existing consumers that don't touch payroll are unaffected.
+   */
+  compensation?: CompensationProfileInputs;
 }
 
 export interface Benefit {
@@ -89,4 +97,16 @@ export interface Notification {
   message: string;
   read: boolean;
   createdAt: string;
+}
+
+/**
+ * Rank-based salary reference (Salary & Compensation module).
+ * Effective Jan 1, 2027 per Executive No. 107 (2nd Tranche). NUP
+ * (Non-Uniformed Personnel) is included and treated identically to uniformed
+ * ranks for pay computation (same Longevity Pay tiers, same CAL formula).
+ */
+export interface RankPayGrade {
+  rank: string; // e.g. "NUP", "PGEN", "PLT"
+  salaryGrade: number;
+  basePay: number;
 }

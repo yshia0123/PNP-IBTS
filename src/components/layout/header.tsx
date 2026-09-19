@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UserCircle2, LogOut } from "lucide-react";
-import { useUiStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { GlobalSearch } from "@/features/search/global-search";
 import { NotificationBell } from "@/features/notifications/notification-bell";
@@ -24,15 +22,9 @@ const ROLE_LABEL: Record<Role, string> = {
  * Shows the signed-in user and a logout action (mock auth, Section 1.4).
  */
 export function Header() {
-  const theme = useUiStore((s) => s.theme);
-  const setTheme = useUiStore((s) => s.setTheme);
   const currentUser = useSessionStore((s) => s.currentUser);
   const logout = useSessionStore((s) => s.logout);
   const router = useRouter();
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
 
   const handleLogout = () => {
     logout();
@@ -58,17 +50,6 @@ export function Header() {
       <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-2">
-        <button
-          type="button"
-          aria-label={
-            theme === "light" ? "Switch to dark mode" : "Switch to light mode"
-          }
-          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          className="rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted"
-        >
-          {theme === "light" ? "Dark" : "Light"}
-        </button>
-
         <NotificationBell />
 
         <div className="flex items-center gap-2 rounded-md p-1.5 text-foreground">
