@@ -36,8 +36,15 @@ export interface Personnel {
   userId: string;
   fullName: string;
   rank: string;
+  /**
+   * Whole years of service, COMPUTED from joinDate → (separationDate or today).
+   * Not a raw stored value — always derived in mapPersonnel so every module
+   * shows a consistent, real-time figure.
+   */
   serviceYears: number;
-  joinDate: string; // ISO date
+  joinDate: string; // ISO date — date of entry
+  /** Last day of service (retired/separated). Undefined while active. */
+  separationDate?: string;
   promotionHistory: PromotionRecord[];
   status: "active" | "retired" | "separated";
   /**

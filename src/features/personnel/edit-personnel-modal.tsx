@@ -1,28 +1,35 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/lib/stores/toast-store";
+import { computeServiceYears } from "@/lib/format";
 import type { Personnel } from "@/lib/types";
 import { useUpdatePersonnel } from "./hooks";
 
 /**
  * EditPersonnelModal (SSOT Phase 4 forms). Admin/HR edit a personnel record.
+ * Service years are computed from the date of entry and (for retired/separated)
+ * the last day of service — no raw years input.
  */
-const schema = z.object({
-  fullName: z.string().min(2, "Name is required."),
-  rank: z.string().min(1, "Rank is required."),
-  serviceYears: z.coerce
-    .number()
-    .int("Whole years only.")
-    .min(0, "Cannot be negative.")
-    .max(60, "That seems too high."),
-  joinDate: z.string().min(1, "Join date is required."),
-  status: z.enum(["active", "retired", "separated"]),
-});
+const schema = z
+  .object({
+    fullName: z.string().min(2, "Name is required."),
+    rank: z.string().min(1, "Rank is required."),
+    joinDate: z.string().min(1, "Date of entry is required."),
+    separationDate: z.string().optional(),
+    status: z.enum(["active", "retired", "separated"]),
+  })
+  .refine(
+    (v) =>
+      v.status === "active" ||
+      !v.separationDate ||
+      new Date(v.separationDate) >= new Date(v.joinDate),
+    { message: "Last day must be after the date of entry.", path: ["separationDate"] }
+  );
 
 type FormValues = z.infer<typeof schema>;
 
@@ -39,14 +46,15 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       fullName: "",
       rank: "",
-      serviceYears: 0,
       joinDate: "",
+      separationDate: "",
       status: "active",
     },
   });
@@ -57,27 +65,43 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
       reset({
         fullName: personnel.fullName,
         rank: personnel.rank,
-        serviceYears: personnel.serviceYears,
         joinDate: personnel.joinDate,
+        separationDate: personnel.separationDate ?? "",
         status: personnel.status,
       });
     }
   }, [open, personnel, reset]);
 
+  const status = useWatch({ control, name: "status" });
+  const joinDate = useWatch({ control, name: "joinDate" });
+  const separationDate = useWatch({ control, name: "separationDate" });
+  const isRetiredOrSeparated = status === "retired" || status === "separated";
+  const computedYears = computeServiceYears(
+    joinDate,
+    isRetiredOrSeparated ? separationDate : null
+  );
+
   if (!personnel) return null;
 
   const onSubmit = (values: FormValues) => {
-    update.mutate(
-      { id: personnel.id, ...values },
-      {
-        onSuccess: () => {
-          toast.success("Record updated", `${values.fullName} saved.`);
-          onClose();
-        },
-        onError: (err) =>
-          toast.error("Couldn't save changes", (err as Error).message),
-      }
-    );
+    const payload = {
+      id: personnel.id,
+      fullName: values.fullName,
+      rank: values.rank,
+      joinDate: values.joinDate,
+      status: values.status,
+      // Only send a separation date for retired/separated; clear it otherwise.
+      separationDate:
+        values.status === "active" ? null : values.separationDate || null,
+    };
+    update.mutate(payload, {
+      onSuccess: () => {
+        toast.success("Record updated", `${values.fullName} saved.`);
+        onClose();
+      },
+      onError: (err) =>
+        toast.error("Couldn't save changes", (err as Error).message),
+    });
   };
 
   return (
@@ -97,23 +121,6 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
             />
           </Field>
-          <Field label="Service years" error={errors.serviceYears?.message}>
-            <input
-              type="number"
-              {...register("serviceYears")}
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-            />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Join date" error={errors.joinDate?.message}>
-            <input
-              type="date"
-              {...register("joinDate")}
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-            />
-          </Field>
           <Field label="Status" error={errors.status?.message}>
             <select
               {...register("status")}
@@ -124,6 +131,42 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
               <option value="separated">Separated (left service)</option>
             </select>
           </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Date of entry" error={errors.joinDate?.message}>
+            <input
+              type="date"
+              {...register("joinDate")}
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+            />
+          </Field>
+          {isRetiredOrSeparated && (
+            <Field
+              label="Last day of service"
+              error={errors.separationDate?.message}
+            >
+              <input
+                type="date"
+                {...register("separationDate")}
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+              />
+            </Field>
+          )}
+        </div>
+
+        {/* Computed, read-only. */}
+        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
+          <span className="text-muted-foreground">Years of service: </span>
+          <span className="font-semibold text-foreground">
+            {computedYears} yrs
+          </span>
+          <span className="text-muted-foreground">
+            {" "}
+            {isRetiredOrSeparated
+              ? "(entry → last day)"
+              : "(entry → today, live)"}
+          </span>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">

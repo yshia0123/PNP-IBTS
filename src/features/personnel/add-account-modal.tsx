@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Modal } from "@/components/ui/modal";
 import { toast } from "@/lib/stores/toast-store";
+import { computeServiceYears } from "@/lib/format";
 import type { Personnel } from "@/lib/types";
 import { useCreateAccount } from "./hooks";
 
@@ -20,8 +21,8 @@ const schema = z
     email: z.string().min(1, "Email is required.").email("Enter a valid email."),
     role: z.enum(["officer", "retiree", "dependent"]),
     rank: z.string().optional(),
-    serviceYears: z.coerce.number().int().min(0).max(60).optional(),
     joinDate: z.string().optional(),
+    separationDate: z.string().optional(),
     relationship: z.enum(["spouse", "child", "parent", "other"]).optional(),
     sponsorPersonnelId: z.string().optional(),
   })
@@ -32,6 +33,29 @@ const schema = z
           code: "custom",
           path: ["rank"],
           message: "Rank is required for this role.",
+        });
+      if (!val.joinDate)
+        ctx.addIssue({
+          code: "custom",
+          path: ["joinDate"],
+          message: "Date of entry is required.",
+        });
+    }
+    if (val.role === "retiree") {
+      if (!val.separationDate)
+        ctx.addIssue({
+          code: "custom",
+          path: ["separationDate"],
+          message: "Last day of service is required for retirees.",
+        });
+      else if (
+        val.joinDate &&
+        new Date(val.separationDate) < new Date(val.joinDate)
+      )
+        ctx.addIssue({
+          code: "custom",
+          path: ["separationDate"],
+          message: "Last day must be after the date of entry.",
         });
     }
     if (val.role === "dependent") {
@@ -74,8 +98,8 @@ export function AddAccountModal({ open, onClose, personnel }: Props) {
       email: "",
       role: "officer",
       rank: "",
-      serviceYears: 0,
       joinDate: "",
+      separationDate: "",
       relationship: undefined,
       sponsorPersonnelId: "",
     },
@@ -90,8 +114,15 @@ export function AddAccountModal({ open, onClose, personnel }: Props) {
   }, [open]);
 
   const role = useWatch({ control, name: "role" });
+  const joinDate = useWatch({ control, name: "joinDate" });
+  const separationDate = useWatch({ control, name: "separationDate" });
   const isPersonnelRole = role === "officer" || role === "retiree";
+  const isRetiree = role === "retiree";
   const isDependent = role === "dependent";
+  const computedYears = computeServiceYears(
+    joinDate,
+    isRetiree ? separationDate : null
+  );
 
   const onSubmit = (values: FormValues) => {
     create.mutate(values, {
@@ -145,21 +176,40 @@ export function AddAccountModal({ open, onClose, personnel }: Props) {
                   className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
                 />
               </Field>
-              <Field label="Service years" error={errors.serviceYears?.message}>
+              <Field label="Date of entry" error={errors.joinDate?.message}>
                 <input
-                  type="number"
-                  {...register("serviceYears")}
+                  type="date"
+                  {...register("joinDate")}
                   className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
                 />
               </Field>
             </div>
-            <Field label="Join date" error={errors.joinDate?.message}>
-              <input
-                type="date"
-                {...register("joinDate")}
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-              />
-            </Field>
+            {isRetiree && (
+              <Field
+                label="Last day of service"
+                error={errors.separationDate?.message}
+              >
+                <input
+                  type="date"
+                  {...register("separationDate")}
+                  className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
+                />
+              </Field>
+            )}
+            {joinDate && (
+              <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
+                <span className="text-muted-foreground">
+                  Years of service:{" "}
+                </span>
+                <span className="font-semibold text-foreground">
+                  {computedYears} yrs
+                </span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  {isRetiree ? "(entry → last day)" : "(entry → today, live)"}
+                </span>
+              </div>
+            )}
           </>
         )}
 

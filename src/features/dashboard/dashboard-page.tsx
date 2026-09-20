@@ -6,7 +6,9 @@ import { PerformanceBenefitsPortfolio } from "./components/performance-benefits-
 import { BenefitsSummaryGrid } from "./components/benefits-summary-grid";
 import { ActionRequiredFeed } from "./components/action-required-feed";
 import { DependentDashboard } from "./components/dependent-dashboard";
-import { useMyBenefits, useMyPersonnel } from "./hooks";
+import { ComputedBreakdown } from "@/features/compensation/components/computed-breakdown";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMyBenefits, useMyCompensation, useMyPersonnel } from "./hooks";
 
 /**
  * DashboardPage (SmartContainer) — SSOT Section 2.2.
@@ -46,6 +48,8 @@ export function DashboardPage() {
 function PersonnelDashboard() {
   const personnelQuery = useMyPersonnel();
   const benefitsQuery = useMyBenefits();
+  const compensationQuery = useMyCompensation();
+  const comp = compensationQuery.data;
 
   return (
     <>
@@ -71,8 +75,30 @@ function PersonnelDashboard() {
           isLoading={benefitsQuery.isLoading}
           isError={benefitsQuery.isError}
           onRetry={() => benefitsQuery.refetch()}
+          computed={comp?.computed}
         />
       </section>
+
+      {/* My compensation — read-only; reflects the Admin's latest saved edits. */}
+      {compensationQuery.isLoading ? (
+        <Skeleton className="h-64 w-full" />
+      ) : comp ? (
+        <section aria-label="My compensation">
+          <h2 className="mb-3 text-sm font-semibold text-muted-foreground">
+            My Compensation
+          </h2>
+          <ComputedBreakdown
+            computed={comp.computed}
+            personName={comp.person.fullName}
+            rank={comp.person.rank}
+            salaryGrade={comp.salaryGrade}
+            status={comp.person.status}
+            joinDate={comp.person.joinDate}
+            separationDate={comp.person.separationDate}
+            serviceYears={comp.person.serviceYears}
+          />
+        </section>
+      ) : null}
 
       <ActionRequiredFeed />
     </>

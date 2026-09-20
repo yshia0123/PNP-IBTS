@@ -74,3 +74,36 @@ export function formatPeso(amount?: number | null): string {
     maximumFractionDigits: 2,
   }).format(amount)}`;
 }
+
+/**
+ * Whole years of service between a join date and an end date.
+ *
+ * - Active personnel: end date is "today" (real-time), so the figure grows
+ *   automatically over time.
+ * - Retired / separated personnel: end date is their last day of service
+ *   (separationDate). Falls back to today if a separation date is missing.
+ *
+ * Returns a non-negative whole number (completed years). Invalid/blank join
+ * dates yield 0.
+ */
+export function computeServiceYears(
+  joinDate: string | null | undefined,
+  separationDate?: string | null
+): number {
+  if (!joinDate) return 0;
+  const start = new Date(joinDate);
+  if (Number.isNaN(start.getTime())) return 0;
+
+  const end =
+    separationDate && !Number.isNaN(new Date(separationDate).getTime())
+      ? new Date(separationDate)
+      : new Date();
+
+  let years = end.getFullYear() - start.getFullYear();
+  // Subtract a year if the anniversary hasn't occurred yet this year.
+  const monthDiff = end.getMonth() - start.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && end.getDate() < start.getDate())) {
+    years -= 1;
+  }
+  return Math.max(0, years);
+}

@@ -8,6 +8,7 @@ import type {
   PromotionRecord,
   User,
 } from "@/lib/types";
+import { computeServiceYears } from "@/lib/format";
 
 /**
  * Row → app-type mappers. Supabase columns are snake_case; the frontend types
@@ -34,8 +35,11 @@ export function mapPersonnel(row: any): Personnel {
     userId: row.user_id,
     fullName: row.full_name,
     rank: row.rank,
-    serviceYears: row.service_years,
+    // Always computed from dates so every module gets a consistent, real-time
+    // figure. The stored service_years column is a cached mirror only.
+    serviceYears: computeServiceYears(row.join_date, row.separation_date),
     joinDate: row.join_date,
+    separationDate: row.separation_date ?? undefined,
     status: row.status,
     promotionHistory: (row.promotion_history ?? []) as PromotionRecord[],
     compensation: (row.compensation ?? {}) as Personnel["compensation"],

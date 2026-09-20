@@ -26,9 +26,16 @@ const TYPE_META: Record<
 export function BenefitCard({
   type,
   benefit,
+  computed,
 }: {
   type: Benefit["type"];
   benefit?: Benefit;
+  /**
+   * Live figure derived from the person's Computed Compensation, shown
+   * alongside the stored benefit so the summary reflects the computation and
+   * updates when the Admin saves an edit. Undefined when unavailable.
+   */
+  computed?: { label: string; amount: number };
 }) {
   const meta = TYPE_META[type];
   const Icon = meta.icon;
@@ -70,10 +77,33 @@ export function BenefitCard({
                 : ""}
             </p>
           </div>
+        ) : computed ? (
+          <div className="mt-4 space-y-1">
+            <p className="truncate text-sm text-muted-foreground">
+              {computed.label}
+            </p>
+            <p className="text-2xl font-semibold text-foreground">
+              {formatCurrency(computed.amount)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              From current compensation
+            </p>
+          </div>
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">
             No {meta.title.toLowerCase()} on record.
           </p>
+        )}
+
+        {/* When a stored benefit exists, still surface the live computed figure
+            so the card stays linked to the Computed Compensation. */}
+        {benefit && computed && (
+          <div className="mt-3 border-t border-border pt-2">
+            <p className="text-[11px] text-muted-foreground">{computed.label}</p>
+            <p className="text-sm font-semibold text-primary">
+              {formatCurrency(computed.amount)}
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>

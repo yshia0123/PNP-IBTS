@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LogIn, AlertCircle } from "lucide-react";
+import { LogIn, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/lib/stores/toast-store";
 import { useLogin } from "./hooks";
 
@@ -24,6 +25,7 @@ type FormValues = z.infer<typeof schema>;
 export function LoginPage() {
   const router = useRouter();
   const login = useLogin();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -60,17 +62,17 @@ export function LoginPage() {
         aria-hidden
       />
 
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
           <Image
             src="/pnp-logo.png"
             alt="PNP logo"
-            width={56}
-            height={56}
+            width={64}
+            height={64}
             priority
-            className="h-14 w-14 object-contain"
+            className="h-16 w-16 object-contain"
           />
-          <h1 className="mt-3 text-xl font-semibold tracking-tight text-white drop-shadow">
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white drop-shadow">
             PNP IBTS
           </h1>
           <p className="text-sm text-white/80 drop-shadow">
@@ -78,8 +80,8 @@ export function LoginPage() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-border bg-surface p-6 shadow-sm">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="rounded-xl border border-border bg-surface p-8 shadow-lg">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label
                 htmlFor="email"
@@ -92,8 +94,8 @@ export function LoginPage() {
                 type="email"
                 autoComplete="username"
                 {...register("email")}
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-                placeholder="you@ibts.local"
+                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
+                placeholder="Email"
               />
               {errors.email && (
                 <p className="mt-1 text-xs text-danger">
@@ -109,14 +111,29 @@ export function LoginPage() {
               >
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                {...register("password")}
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-                placeholder="••••••••"
-              />
+              <div className="relative mt-1">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  {...register("password")}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2.5 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
+                  placeholder="Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" aria-hidden />
+                  ) : (
+                    <Eye className="h-4 w-4" aria-hidden />
+                  )}
+                </button>
+              </div>
               {errors.password && (
                 <p className="mt-1 text-xs text-danger">
                   {errors.password.message}

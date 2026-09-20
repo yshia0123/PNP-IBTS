@@ -160,7 +160,7 @@ export function CompensationPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+              <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
                 <CompensationEditor
                   inputs={draft}
                   onChange={setDraft}
@@ -172,6 +172,9 @@ export function CompensationPage() {
                   rank={comp.person.rank}
                   salaryGrade={comp.salaryGrade}
                   status={comp.person.status}
+                  joinDate={comp.person.joinDate}
+                  separationDate={comp.person.separationDate}
+                  serviceYears={comp.person.serviceYears}
                 />
               </div>
 

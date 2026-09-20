@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { mapPersonnel } from "@/lib/db-mappers";
 import { audit, currentUserId, jsonError, todayLocal } from "@/lib/api-helpers";
+import { computeServiceYears } from "@/lib/format";
 
 // List all personnel.
 export async function GET() {
@@ -17,8 +18,8 @@ export async function POST(request: Request) {
     email?: string;
     role?: "officer" | "retiree" | "dependent";
     rank?: string;
-    serviceYears?: number;
     joinDate?: string;
+    separationDate?: string | null;
     relationship?: "spouse" | "child" | "parent" | "other";
     sponsorPersonnelId?: string;
   };
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
   let createdPersonnel = null;
   if (body.role === "officer" || body.role === "retiree") {
     const personnelId = `p-${Date.now()}`;
+    const joinDate = body.joinDate || todayLocal();
+    const separationDate =
+      body.role === "retiree" ? body.separationDate || null : null;
     const { data } = await supabaseAdmin
       .from("personnel")
       .insert({
@@ -58,8 +62,10 @@ export async function POST(request: Request) {
         user_id: userId,
         full_name: body.fullName,
         rank: body.rank ?? "N/A",
-        service_years: body.serviceYears ?? 0,
-        join_date: body.joinDate || todayLocal(),
+        // Cached mirror of the computed value (source of truth is the dates).
+        service_years: computeServiceYears(joinDate, separationDate),
+        join_date: joinDate,
+        separation_date: separationDate,
         status: body.role === "retiree" ? "retired" : "active",
         promotion_history: [],
       })

@@ -63,6 +63,9 @@ export function useSaveCompensation(personnelId: string | null) {
       ),
     onSuccess: (data) => {
       qc.setQueryData(["compensation", "person", personnelId], data);
+      // If the editor is viewing their own dashboard, refresh the "My
+      // Compensation" card too (cross-user updates refetch on window focus).
+      qc.invalidateQueries({ queryKey: ["dashboard", "compensation", "me"] });
     },
   });
 }

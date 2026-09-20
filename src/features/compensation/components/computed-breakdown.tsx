@@ -1,8 +1,17 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatPeso } from "@/lib/format";
+import { Badge } from "@/components/ui/badge";
+import { formatPeso, formatDate } from "@/lib/format";
 import type { ComputedCompensation } from "@/lib/compensation";
+import type { Personnel } from "@/lib/types";
+
+// Status → badge color, matching the Personnel list (green active, blue retired).
+const STATUS_VARIANT: Record<Personnel["status"], "success" | "info" | "neutral"> = {
+  active: "success",
+  retired: "info",
+  separated: "neutral",
+};
 
 /**
  * ComputedBreakdown — read-only roll-up of the fully computed profile: monthly
@@ -15,28 +24,42 @@ export function ComputedBreakdown({
   rank,
   salaryGrade,
   status,
+  joinDate,
+  separationDate,
+  serviceYears,
 }: {
   computed: ComputedCompensation;
   personName: string;
   rank: string;
   salaryGrade: number;
-  status: string;
+  status: Personnel["status"];
+  joinDate: string;
+  separationDate?: string;
+  serviceYears: number;
 }) {
   const { monthly, annual, totalMonthly, totalAnnual, pension } = computed;
   const nonZeroMonthly = monthly.filter((i) => i.amount !== 0);
+  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Computed Compensation — {personName}</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            {rank} · {status.charAt(0).toUpperCase() + status.slice(1)}
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle>Computed Compensation</CardTitle>
+            <Badge variant={STATUS_VARIANT[status]}>{statusLabel}</Badge>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Rank-derived, read-only. Base Pay follows the person's rank. */}
-          <div className="grid grid-cols-3 gap-3 rounded-md border border-border bg-muted/30 p-3 text-center">
+          {/* All personnel details in one rectangle. Name + rank-derived +
+              service dates. Status is omitted here — the badge above shows it. */}
+          <div className="grid grid-cols-3 gap-x-3 gap-y-4 rounded-md border border-border bg-muted/30 p-4 text-left">
+            <div className="col-span-3">
+              <p className="text-[11px] text-muted-foreground">Name</p>
+              <p className="text-lg font-semibold text-foreground">
+                {personName}
+              </p>
+            </div>
             <div>
               <p className="text-[11px] text-muted-foreground">Rank</p>
               <p className="text-sm font-semibold text-foreground">{rank}</p>
@@ -51,6 +74,26 @@ export function ComputedBreakdown({
               <p className="text-[11px] text-muted-foreground">Base Pay</p>
               <p className="text-sm font-semibold text-foreground">
                 {formatPeso(computed.basePay)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] text-muted-foreground">Date Joined</p>
+              <p className="text-sm font-semibold text-foreground">
+                {formatDate(joinDate)}
+              </p>
+            </div>
+            {separationDate && (
+              <div>
+                <p className="text-[11px] text-muted-foreground">Last Day</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {formatDate(separationDate)}
+                </p>
+              </div>
+            )}
+            <div>
+              <p className="text-[11px] text-muted-foreground">Years of Service</p>
+              <p className="text-sm font-semibold text-foreground">
+                {serviceYears} yrs
               </p>
             </div>
           </div>

@@ -14,8 +14,8 @@ export interface NewAccountInput {
   email: string;
   role: "officer" | "retiree" | "dependent";
   rank?: string;
-  serviceYears?: number;
   joinDate?: string;
+  separationDate?: string | null;
   relationship?: "spouse" | "child" | "parent" | "other";
   sponsorPersonnelId?: string;
 }
@@ -40,8 +40,8 @@ export interface EditPersonnelInput {
   id: string;
   fullName: string;
   rank: string;
-  serviceYears: number;
   joinDate: string;
+  separationDate?: string | null;
   status: "active" | "retired" | "separated";
 }
 

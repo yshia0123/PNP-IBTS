@@ -4,6 +4,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useSessionStore } from "@/lib/stores/session-store";
+import { apiFetch } from "@/lib/api-client";
+import type { CompensationResponse } from "@/features/compensation/hooks";
 import {
   dismissNotification,
   fetchMyBenefits,
@@ -23,6 +25,8 @@ export const dashboardKeys = {
     ["dashboard", "benefits", "me", userId] as const,
   notifications: (userId: string) =>
     ["dashboard", "notifications", userId] as const,
+  compensation: (userId: string) =>
+    ["dashboard", "compensation", "me", userId] as const,
 };
 
 export function useMyPersonnel() {
@@ -38,6 +42,20 @@ export function useMyBenefits() {
   return useQuery({
     queryKey: dashboardKeys.benefits(userId),
     queryFn: fetchMyBenefits,
+  });
+}
+
+/**
+ * The signed-in user's own computed compensation (read-only). Refetches on
+ * window focus (TanStack Query default), so an Admin's saved edit shows up when
+ * the person returns to their dashboard tab.
+ */
+export function useMyCompensation() {
+  const userId = useSessionStore((s) => s.currentUser?.id ?? "anon");
+  return useQuery({
+    queryKey: dashboardKeys.compensation(userId),
+    queryFn: () =>
+      apiFetch<CompensationResponse | null>("/api/personnel/me/compensation"),
   });
 }
 
