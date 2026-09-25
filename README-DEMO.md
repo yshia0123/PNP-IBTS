@@ -26,8 +26,9 @@ install anything — just open the link in your web browser and follow along.
 | Role | Email | Password |
 |---|---|---|
 | **Admin** | j.reyes@ibts.local | admin123 |
-| **HR Manager** | r.lingayo@ibts.local | hr123 |
+| **HR Manager** | a.cruz@ibts.local | hr123 |
 | **Officer** | s.bautista@ibts.local | officer123 |
+| **Officer** | r.lingayo@ibts.local | officer123 |
 | **Retiree** | r.domingo@ibts.local | retiree123 |
 | **Dependent** | m.cruz@ibts.local | dependent123 |
 
@@ -134,7 +135,7 @@ Click **Settings** to update your profile and view your account details.
 
 ## 2. Signing in as the HR Manager
 
-Sign out, then log in with **r.lingayo@ibts.local / hr123**. The HR Manager is
+Sign out, then log in with **a.cruz@ibts.local / hr123**. The HR Manager is
 very similar to the Admin — they can manage personnel and review/decide claims.
 
 > **Notice the difference:** In the **Financial**, **Compensation**, and

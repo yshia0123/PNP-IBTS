@@ -169,6 +169,7 @@ export function LoginPage() {
               <li>Admin — j.reyes@ibts.local / admin123</li>
               <li>HR Manager — a.cruz@ibts.local / hr123</li>
               <li>Officer — s.bautista@ibts.local / officer123</li>
+              <li>Officer — r.lingayo@ibts.local / officer123</li>
               <li>Retiree — r.domingo@ibts.local / retiree123</li>
               <li>Dependent — m.cruz@ibts.local / dependent123</li>
             </ul>
