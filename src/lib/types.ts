@@ -45,6 +45,8 @@ export interface Personnel {
   joinDate: string; // ISO date — date of entry
   /** Last day of service (retired/separated). Undefined while active. */
   separationDate?: string;
+  /** Payslip / disbursement account number (Admin-managed). */
+  payslipAccountNo?: string;
   promotionHistory: PromotionRecord[];
   status: "active" | "retired" | "separated";
   /**

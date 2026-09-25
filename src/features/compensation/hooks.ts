@@ -56,7 +56,11 @@ export function usePersonCompensation(personnelId: string | null) {
 export function useSaveCompensation(personnelId: string | null) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (inputs: Partial<CompensationProfileInputs>) =>
+    mutationFn: (
+      inputs: Partial<CompensationProfileInputs> & {
+        payslipAccountNo?: string | null;
+      }
+    ) =>
       apiFetch<CompensationResponse>(
         `/api/personnel/${personnelId}/compensation`,
         { method: "PATCH", body: JSON.stringify(inputs) }

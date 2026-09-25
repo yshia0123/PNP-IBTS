@@ -27,6 +27,7 @@ export function ComputedBreakdown({
   joinDate,
   separationDate,
   serviceYears,
+  payslipAccountNo,
 }: {
   computed: ComputedCompensation;
   personName: string;
@@ -36,6 +37,7 @@ export function ComputedBreakdown({
   joinDate: string;
   separationDate?: string;
   serviceYears: number;
+  payslipAccountNo?: string;
 }) {
   const { monthly, annual, totalMonthly, totalAnnual, pension } = computed;
   const nonZeroMonthly = monthly.filter((i) => i.amount !== 0);
@@ -58,6 +60,14 @@ export function ComputedBreakdown({
               <p className="text-[11px] text-muted-foreground">Name</p>
               <p className="text-lg font-semibold text-foreground">
                 {personName}
+              </p>
+            </div>
+            <div className="col-span-3">
+              <p className="text-[11px] text-muted-foreground">
+                Payslip Account No.
+              </p>
+              <p className="text-sm font-semibold text-foreground">
+                {payslipAccountNo || "—"}
               </p>
             </div>
             <div>

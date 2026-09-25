@@ -96,6 +96,7 @@ function PersonnelDashboard() {
             joinDate={comp.person.joinDate}
             separationDate={comp.person.separationDate}
             serviceYears={comp.person.serviceYears}
+            payslipAccountNo={comp.person.payslipAccountNo}
           />
         </section>
       ) : null}

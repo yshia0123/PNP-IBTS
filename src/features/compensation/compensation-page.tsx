@@ -55,10 +55,14 @@ export function CompensationPage() {
   const [draft, setDraft] = useState<CompensationProfileInputs>(
     EMPTY_COMPENSATION_INPUTS
   );
-  const loadedSig = comp ? `${comp.person.id}:${JSON.stringify(comp.inputs)}` : null;
+  const [payslipDraft, setPayslipDraft] = useState("");
+  const loadedSig = comp
+    ? `${comp.person.id}:${JSON.stringify(comp.inputs)}:${comp.person.payslipAccountNo ?? ""}`
+    : null;
   const [syncedSig, setSyncedSig] = useState<string | null>(null);
   if (loadedSig && loadedSig !== syncedSig) {
     setDraft(comp!.inputs);
+    setPayslipDraft(comp!.person.payslipAccountNo ?? "");
     setSyncedSig(loadedSig);
   }
 
@@ -95,11 +99,17 @@ export function CompensationPage() {
       : null;
 
   const handleSave = () => {
-    save.mutate(draft, {
-      onSuccess: () => toast.success("Compensation saved."),
-      onError: (e) =>
-        toast.error("Save failed", e instanceof Error ? e.message : undefined),
-    });
+    save.mutate(
+      { ...draft, payslipAccountNo: payslipDraft.trim() || null },
+      {
+        onSuccess: () => toast.success("Compensation saved."),
+        onError: (e) =>
+          toast.error(
+            "Save failed",
+            e instanceof Error ? e.message : undefined
+          ),
+      }
+    );
   };
 
   return (
@@ -164,6 +174,8 @@ export function CompensationPage() {
                 <CompensationEditor
                   inputs={draft}
                   onChange={setDraft}
+                  payslipAccountNo={payslipDraft}
+                  onPayslipChange={setPayslipDraft}
                   readOnly={!canEdit}
                 />
                 <ComputedBreakdown
@@ -175,6 +187,7 @@ export function CompensationPage() {
                   joinDate={comp.person.joinDate}
                   separationDate={comp.person.separationDate}
                   serviceYears={comp.person.serviceYears}
+                  payslipAccountNo={payslipDraft}
                 />
               </div>
 

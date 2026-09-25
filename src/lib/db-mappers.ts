@@ -40,6 +40,7 @@ export function mapPersonnel(row: any): Personnel {
     serviceYears: computeServiceYears(row.join_date, row.separation_date),
     joinDate: row.join_date,
     separationDate: row.separation_date ?? undefined,
+    payslipAccountNo: row.payslip_account_no ?? undefined,
     status: row.status,
     promotionHistory: (row.promotion_history ?? []) as PromotionRecord[],
     compensation: (row.compensation ?? {}) as Personnel["compensation"],

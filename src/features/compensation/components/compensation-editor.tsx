@@ -12,10 +12,14 @@ import type { CompensationProfileInputs } from "@/lib/compensation";
 export function CompensationEditor({
   inputs,
   onChange,
+  payslipAccountNo,
+  onPayslipChange,
   readOnly = false,
 }: {
   inputs: CompensationProfileInputs;
   onChange: (next: CompensationProfileInputs) => void;
+  payslipAccountNo: string;
+  onPayslipChange: (value: string) => void;
   readOnly?: boolean;
 }) {
   const set = <K extends keyof CompensationProfileInputs>(
@@ -25,6 +29,32 @@ export function CompensationEditor({
 
   return (
     <fieldset disabled={readOnly} aria-disabled={readOnly} className="space-y-6">
+      {/* Payslip account */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Payslip Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1.5">
+            <label
+              htmlFor="payslipAccountNo"
+              className="text-xs font-medium text-muted-foreground"
+            >
+              Payslip Account No.
+            </label>
+            <input
+              id="payslipAccountNo"
+              type="text"
+              inputMode="numeric"
+              value={payslipAccountNo}
+              onChange={(e) => onPayslipChange(e.target.value)}
+              placeholder="e.g. 2000070066"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)] disabled:cursor-not-allowed disabled:opacity-60"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Duty-based & collateral pay */}
       <Card>
         <CardHeader>

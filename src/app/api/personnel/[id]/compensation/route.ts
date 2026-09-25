@@ -76,9 +76,9 @@ export async function PATCH(
     return jsonError("Only Admin may edit compensation.", 403);
   }
 
-  const body = (await request
-    .json()
-    .catch(() => ({}))) as Partial<CompensationProfileInputs>;
+  const body = (await request.json().catch(() => ({}))) as Partial<
+    CompensationProfileInputs & { payslipAccountNo: string | null }
+  >;
 
   const { data: existing, error: readErr } = await supabaseAdmin
     .from("personnel")
@@ -97,9 +97,19 @@ export async function PATCH(
     ...sanitize(body),
   };
 
+  // payslip account number is a personnel column (not a computed input).
+  const patch: Record<string, unknown> = { compensation: merged };
+  if ("payslipAccountNo" in body) {
+    const raw =
+      typeof body.payslipAccountNo === "string"
+        ? body.payslipAccountNo.trim()
+        : "";
+    patch.payslip_account_no = raw === "" ? null : raw;
+  }
+
   const { data, error } = await supabaseAdmin
     .from("personnel")
-    .update({ compensation: merged })
+    .update(patch)
     .eq("id", id)
     .select("*")
     .maybeSingle();
