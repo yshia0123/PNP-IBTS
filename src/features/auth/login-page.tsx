@@ -39,7 +39,7 @@ export function LoginPage() {
   const onSubmit = (values: FormValues) => {
     login.mutate(values, {
       onSuccess: (user) => {
-        toast.success("Signed in", `Welcome, ${user.name}.`);
+        toast.success("Logged in", `Welcome, ${user.name}.`);
         router.replace("/");
       },
       // Error is shown inline below the form (the Toaster isn't mounted on the
@@ -95,7 +95,7 @@ export function LoginPage() {
                 autoComplete="username"
                 {...register("email")}
                 className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
-                placeholder="Email"
+                placeholder="Enter Email"
               />
               {errors.email && (
                 <p className="mt-1 text-xs text-danger">
@@ -118,7 +118,7 @@ export function LoginPage() {
                   autoComplete="current-password"
                   {...register("password")}
                   className="w-full rounded-md border border-border bg-background px-3 py-2.5 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--blue-500)]"
-                  placeholder="Password"
+                  placeholder="Enter Password"
                 />
                 <button
                   type="button"
@@ -157,7 +157,7 @@ export function LoginPage() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
               <LogIn className="h-4 w-4" aria-hidden />
-              {login.isPending ? "Signing in…" : "Sign in"}
+              {login.isPending ? "Logging in…" : "Log in"}
             </button>
           </form>
 
