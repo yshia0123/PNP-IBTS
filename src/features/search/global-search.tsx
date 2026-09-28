@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Users, FileText, UserCheck, Loader2 } from "lucide-react";
+import { Search, Users, FileText, Loader2 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { useGlobalSearch, type SearchResult } from "./hooks";
 
 const TYPE_ICON = {
   personnel: Users,
   claim: FileText,
-  retiree: UserCheck,
 } as const;
 
 /**

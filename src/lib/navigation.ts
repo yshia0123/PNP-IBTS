@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  UserCheck,
   BarChart3,
   Wallet,
   ScrollText,
@@ -27,7 +26,6 @@ export const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
   { key: "personnel", label: "Personnel", href: "/personnel", icon: Users },
   { key: "claims", label: "Claims", href: "/claims", icon: FileText },
-  { key: "retirees", label: "Retirees", href: "/retirees", icon: UserCheck },
   { key: "financial", label: "Financial", href: "/financial", icon: BarChart3 },
   {
     key: "compensation",

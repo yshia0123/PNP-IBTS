@@ -12,12 +12,8 @@ export function usePersonnel() {
 export interface NewAccountInput {
   fullName: string;
   email: string;
-  role: "officer" | "retiree" | "dependent";
-  rank?: string;
+  rank: string;
   joinDate?: string;
-  separationDate?: string | null;
-  relationship?: "spouse" | "child" | "parent" | "other";
-  sponsorPersonnelId?: string;
 }
 
 export function useCreateAccount() {
@@ -30,7 +26,6 @@ export function useCreateAccount() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["personnel", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["retirees", "list"] });
       queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
     },
   });
@@ -41,8 +36,6 @@ export interface EditPersonnelInput {
   fullName: string;
   rank: string;
   joinDate: string;
-  separationDate?: string | null;
-  status: "active" | "retired" | "separated";
 }
 
 export function useUpdatePersonnel() {
@@ -55,7 +48,6 @@ export function useUpdatePersonnel() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["personnel", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["retirees", "list"] });
       queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
     },
   });

@@ -5,19 +5,16 @@ import { ProfileHeroCard } from "./components/profile-hero-card";
 import { PerformanceBenefitsPortfolio } from "./components/performance-benefits-portfolio";
 import { BenefitsSummaryGrid } from "./components/benefits-summary-grid";
 import { ActionRequiredFeed } from "./components/action-required-feed";
-import { DependentDashboard } from "./components/dependent-dashboard";
 import { ComputedBreakdown } from "@/features/compensation/components/computed-breakdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMyBenefits, useMyCompensation, useMyPersonnel } from "./hooks";
 
 /**
  * DashboardPage (SmartContainer) — SSOT Section 2.2.
- * Dependents get a verification-focused view (Section 2.4); every other role
- * gets the personnel service + benefits portfolio.
+ * All roles get the personnel service + benefits portfolio.
  */
 export function DashboardPage() {
   const currentUser = useSessionStore((s) => s.currentUser);
-  const isDependent = currentUser?.role === "dependent";
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -26,20 +23,11 @@ export function DashboardPage() {
           Dashboard
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isDependent
-            ? `Welcome, ${currentUser?.name}. Here's your verification and beneficiary status.`
-            : `Welcome, ${currentUser?.name}. Here's your overview.`}
+          Welcome, {currentUser?.name}. Here&apos;s your overview.
         </p>
       </div>
 
-      {isDependent ? (
-        <>
-          <DependentDashboard />
-          <ActionRequiredFeed />
-        </>
-      ) : (
-        <PersonnelDashboard />
-      )}
+      <PersonnelDashboard />
     </div>
   );
 }
@@ -92,9 +80,7 @@ function PersonnelDashboard() {
             personName={comp.person.fullName}
             rank={comp.person.rank}
             salaryGrade={comp.salaryGrade}
-            status={comp.person.status}
             joinDate={comp.person.joinDate}
-            separationDate={comp.person.separationDate}
             serviceYears={comp.person.serviceYears}
             payslipAccountNo={comp.person.payslipAccountNo}
           />

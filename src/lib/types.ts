@@ -5,7 +5,7 @@
  */
 import type { CompensationProfileInputs } from "@/lib/compensation";
 
-export type Role = "admin" | "hr_manager" | "officer" | "retiree" | "dependent";
+export type Role = "admin" | "hr_manager" | "officer";
 export type BenefitStatus = "active" | "pending" | "suspended" | "expired";
 export type ClaimStatus =
   | "draft"
@@ -37,18 +37,16 @@ export interface Personnel {
   fullName: string;
   rank: string;
   /**
-   * Whole years of service, COMPUTED from joinDate → (separationDate or today).
-   * Not a raw stored value — always derived in mapPersonnel so every module
-   * shows a consistent, real-time figure.
+   * Whole years of service, COMPUTED from joinDate → today. Not a raw stored
+   * value — always derived in mapPersonnel so every module shows a consistent,
+   * real-time figure.
    */
   serviceYears: number;
   joinDate: string; // ISO date — date of entry
-  /** Last day of service (retired/separated). Undefined while active. */
-  separationDate?: string;
   /** Payslip / disbursement account number (Admin-managed). */
   payslipAccountNo?: string;
   promotionHistory: PromotionRecord[];
-  status: "active" | "retired" | "separated";
+  status: "active";
   /**
    * Admin-entered situational compensation inputs (Salary & Compensation
    * module). Computed bonuses/allowances/pensions are derived on read from
@@ -78,15 +76,6 @@ export interface Claim {
   reviewedBy?: string;
   reviewedAt?: string; // ISO timestamp when review started
   notes?: string;
-}
-
-export interface Dependent {
-  id: string;
-  personnelId: string;
-  fullName: string;
-  relationship: "spouse" | "child" | "parent" | "other";
-  verificationStatus: "verified" | "pending" | "unverified";
-  requestedDate?: string;
 }
 
 export interface AuditLog {

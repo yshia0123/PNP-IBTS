@@ -12,24 +12,13 @@ import { useUpdatePersonnel } from "./hooks";
 
 /**
  * EditPersonnelModal (SSOT Phase 4 forms). Admin/HR edit a personnel record.
- * Service years are computed from the date of entry and (for retired/separated)
- * the last day of service — no raw years input.
+ * Years of service are computed from the date of entry — no raw years input.
  */
-const schema = z
-  .object({
-    fullName: z.string().min(2, "Name is required."),
-    rank: z.string().min(1, "Rank is required."),
-    joinDate: z.string().min(1, "Date of entry is required."),
-    separationDate: z.string().optional(),
-    status: z.enum(["active", "retired", "separated"]),
-  })
-  .refine(
-    (v) =>
-      v.status === "active" ||
-      !v.separationDate ||
-      new Date(v.separationDate) >= new Date(v.joinDate),
-    { message: "Last day must be after the date of entry.", path: ["separationDate"] }
-  );
+const schema = z.object({
+  fullName: z.string().min(2, "Name is required."),
+  rank: z.string().min(1, "Rank is required."),
+  joinDate: z.string().min(1, "Date of entry is required."),
+});
 
 type FormValues = z.infer<typeof schema>;
 
@@ -54,8 +43,6 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
       fullName: "",
       rank: "",
       joinDate: "",
-      separationDate: "",
-      status: "active",
     },
   });
 
@@ -66,42 +53,32 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
         fullName: personnel.fullName,
         rank: personnel.rank,
         joinDate: personnel.joinDate,
-        separationDate: personnel.separationDate ?? "",
-        status: personnel.status,
       });
     }
   }, [open, personnel, reset]);
 
-  const status = useWatch({ control, name: "status" });
   const joinDate = useWatch({ control, name: "joinDate" });
-  const separationDate = useWatch({ control, name: "separationDate" });
-  const isRetiredOrSeparated = status === "retired" || status === "separated";
-  const computedYears = computeServiceYears(
-    joinDate,
-    isRetiredOrSeparated ? separationDate : null
-  );
+  const computedYears = computeServiceYears(joinDate);
 
   if (!personnel) return null;
 
   const onSubmit = (values: FormValues) => {
-    const payload = {
-      id: personnel.id,
-      fullName: values.fullName,
-      rank: values.rank,
-      joinDate: values.joinDate,
-      status: values.status,
-      // Only send a separation date for retired/separated; clear it otherwise.
-      separationDate:
-        values.status === "active" ? null : values.separationDate || null,
-    };
-    update.mutate(payload, {
-      onSuccess: () => {
-        toast.success("Record updated", `${values.fullName} saved.`);
-        onClose();
+    update.mutate(
+      {
+        id: personnel.id,
+        fullName: values.fullName,
+        rank: values.rank,
+        joinDate: values.joinDate,
       },
-      onError: (err) =>
-        toast.error("Couldn't save changes", (err as Error).message),
-    });
+      {
+        onSuccess: () => {
+          toast.success("Record updated", `${values.fullName} saved.`);
+          onClose();
+        },
+        onError: (err) =>
+          toast.error("Couldn't save changes", (err as Error).message),
+      }
+    );
   };
 
   return (
@@ -121,19 +98,6 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
             />
           </Field>
-          <Field label="Status" error={errors.status?.message}>
-            <select
-              {...register("status")}
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-            >
-              <option value="active">Active</option>
-              <option value="retired">Retired</option>
-              <option value="separated">Separated (left service)</option>
-            </select>
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
           <Field label="Date of entry" error={errors.joinDate?.message}>
             <input
               type="date"
@@ -141,18 +105,6 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
             />
           </Field>
-          {isRetiredOrSeparated && (
-            <Field
-              label="Last day of service"
-              error={errors.separationDate?.message}
-            >
-              <input
-                type="date"
-                {...register("separationDate")}
-                className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-              />
-            </Field>
-          )}
         </div>
 
         {/* Computed, read-only. */}
@@ -161,12 +113,7 @@ export function EditPersonnelModal({ personnel, open, onClose }: Props) {
           <span className="font-semibold text-foreground">
             {computedYears} yrs
           </span>
-          <span className="text-muted-foreground">
-            {" "}
-            {isRetiredOrSeparated
-              ? "(entry → last day)"
-              : "(entry → today, live)"}
-          </span>
+          <span className="text-muted-foreground"> (entry → today, live)</span>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">

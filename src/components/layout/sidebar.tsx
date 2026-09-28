@@ -22,7 +22,7 @@ export function Sidebar() {
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const theme = useUiStore((s) => s.theme);
   const setTheme = useUiStore((s) => s.setTheme);
-  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
+  const role = useSessionStore((s) => s.currentUser?.role ?? "officer");
 
   // Keep the document theme attribute in sync with the store (moved here from
   // the header when the theme toggle relocated to the sidebar footer).

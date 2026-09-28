@@ -10,7 +10,7 @@
 ## 1. System Overview & Scope
 
 ### 1.1 System Purpose
-IBTS is a centralized web portal for tracking officer benefits, claims, and personnel records across an organization. It gives managers and administrators a single view of an officer's service history, active benefits, pending claims, and dependent-related actions, replacing scattered spreadsheets and manual lookups.
+IBTS is a centralized web portal for tracking officer benefits, claims, and personnel records across an organization. It gives managers and administrators a single view of an officer's service history, active benefits, and pending claims, replacing scattered spreadsheets and manual lookups.
 
 ### 1.2 Core Target Users & Roles
 | Role | Primary Needs |
@@ -18,8 +18,10 @@ IBTS is a centralized web portal for tracking officer benefits, claims, and pers
 | **Admin** | Full system access, user management, audit oversight |
 | **HR Manager** | Personnel records, benefits approval, reporting |
 | **Officer/Personnel** | View own profile, benefits status, submit claims |
-| **Retiree** | View pension/retirement benefits, insurance status |
-| **Dependent** | Limited view — verification requests, insurance beneficiary status |
+
+> **Scope note:** The system covers **active personnel only**. Retiree and
+> dependent roles/views were removed; there are three roles — Admin, HR
+> Manager, and Officer.
 
 ### 1.3 Prototype Goals
 - Fully interactive frontend with realistic UI states (loading, empty, error, success)
@@ -49,12 +51,12 @@ IBTS is a centralized web portal for tracking officer benefits, claims, and pers
 │ - Dashboard │ PERFORMANCE & BENEFITS PORTFOLIO                │
 │ - Personnel │ (Profile summary, Service Years chart,          │
 │ - Claims    │  Promotion History timeline)                    │
-│ - Retirees  ├─────────────────────────────────────────────────┤
-│ - Financial │ BENEFITS SUMMARY (3-card grid)                  │
-│ - Audit Log │ Active Benefits | Retirement Track | Insurance  │
-│ - Settings  ├─────────────────────────────────────────────────┤
-│           │ ACTION REQUIRED FEED                              │
-│           │ (Alerts, Urgent Dependent Verification requests)  │
+│ - Financial ├─────────────────────────────────────────────────┤
+│ - Compensa- │ BENEFITS SUMMARY (3-card grid)                  │
+│   tion      │ Active Benefits | Retirement Track | Insurance  │
+│ - Audit Log ├─────────────────────────────────────────────────┤
+│ - Settings  │ ACTION REQUIRED FEED                              │
+│           │ (Alerts, pending claim reviews)                   │
 ├───────────┴─────────────────────────────────────────────────┤
 │ SYSTEM STATUS BAR: Health indicator | Last Data Sync time     │
 └─────────────────────────────────────────────────────────────┘
@@ -90,8 +92,6 @@ App
    │  ├─ ClaimsPage
    │  │  ├─ ClaimsDataTable
    │  │  └─ ClaimWorkflowModal (multi-step form)
-   │  ├─ RetireesPage
-   │  │  └─ RetireeSearch + RetireeDataTable
    │  ├─ FinancialReportsPage
    │  │  └─ ReportChart[] + ExportButton (mock)
    │  ├─ AuditLogsPage
@@ -123,15 +123,15 @@ App
 - **Accessibility (WCAG 2.1 AA):** minimum 4.5:1 contrast, visible focus rings, `aria-label` on icon-only buttons, keyboard-navigable tables and modals, semantic landmarks (`<nav>`, `<main>`, `<aside>`).
 
 ### 2.4 Role-Based View Matrix
-| View | Admin | HR Manager | Officer | Retiree | Dependent |
-|---|---|---|---|---|---|
-| Dashboard | Full | Full | Own data only | Retirement-focused | Verification-focused |
-| Personnel Records | Full CRUD | Full CRUD | Read own | — | — |
-| Claims Management | Full | Approve/Reject | Submit/View own | Submit/View own | — |
-| Retirees | Full | Full | — | Own profile | — |
-| Financial Reports | Full | Read | — | — | — |
-| Audit Logs | Full | Read | — | — | — |
-| Settings | System-wide | Personal | Personal | Personal | Personal |
+| View | Admin | HR Manager | Officer |
+|---|---|---|---|
+| Dashboard | Full | Full | Own data only |
+| Personnel Records | Full CRUD | Full CRUD | Read own |
+| Claims Management | Full | Approve/Reject | Submit/View own |
+| Financial Reports | Full | Read | — |
+| Compensation | Full (edit) | Read-only | — (own on dashboard) |
+| Audit Logs | Full | Read | — |
+| Settings | System-wide | Personal | Personal |
 
 ---
 
@@ -172,7 +172,7 @@ App
 ### 4.1 Core TypeScript Interfaces
 
 ```typescript
-type Role = "admin" | "hr_manager" | "officer" | "retiree" | "dependent";
+type Role = "admin" | "hr_manager" | "officer";
 type BenefitStatus = "active" | "pending" | "suspended" | "expired";
 type ClaimStatus = "draft" | "submitted" | "under_review" | "approved" | "rejected";
 
@@ -191,10 +191,11 @@ interface Personnel {
   userId: string;
   fullName: string;
   rank: string;
-  serviceYears: number;
-  joinDate: string;      // ISO date
+  serviceYears: number;  // computed from joinDate → today
+  joinDate: string;      // ISO date — date of entry
+  payslipAccountNo?: string;
   promotionHistory: PromotionRecord[];
-  status: "active" | "retired" | "separated";
+  status: "active";
 }
 
 interface PromotionRecord {
@@ -223,15 +224,6 @@ interface Claim {
   submittedDate: string;
   reviewedBy?: string;
   notes?: string;
-}
-
-interface Dependent {
-  id: string;
-  personnelId: string;
-  fullName: string;
-  relationship: "spouse" | "child" | "parent" | "other";
-  verificationStatus: "verified" | "pending" | "unverified";
-  requestedDate?: string;
 }
 
 interface AuditLog {
@@ -284,23 +276,13 @@ interface Notification {
       ]
     }
   ],
-  "dependents": [
-    {
-      "id": "d-001",
-      "personnelId": "p-001",
-      "fullName": "Maria Cruz",
-      "relationship": "spouse",
-      "verificationStatus": "pending",
-      "requestedDate": "2026-09-01"
-    }
-  ],
   "notifications": [
     {
       "id": "n-001",
       "userId": "u-001",
       "type": "action_required",
-      "title": "Dependent Verification Needed",
-      "message": "Verification pending for Maria Cruz (Spouse).",
+      "title": "Claim Awaiting Review",
+      "message": "A new claim request is pending review.",
       "read": false,
       "createdAt": "2026-09-05T09:00:00Z"
     }
@@ -325,9 +307,8 @@ interface Notification {
 8. Build `ActionRequiredFeed` reading from `Notification` mock data, with dismiss/mark-read actions.
 
 ### Phase 3 — Module Views Setup
-9. Build reusable `DataTable` (sort, filter, paginate) and apply it to Personnel, Claims, Retirees.
+9. Build reusable `DataTable` (sort, filter, paginate) and apply it to Personnel and Claims.
 10. Build `ClaimWorkflowModal` as a multi-step form (submit → review → decision).
-11. Build `RetireeSearch` with debounced filtering over the retiree dataset.
 
 ### Phase 4 — Interactive State Management
 12. Wire all forms through React Hook Form + Zod, with mock submit handlers (MSW POST endpoints).

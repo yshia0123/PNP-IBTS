@@ -4,14 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPeso, formatDate } from "@/lib/format";
 import type { ComputedCompensation } from "@/lib/compensation";
-import type { Personnel } from "@/lib/types";
-
-// Status → badge color, matching the Personnel list (green active, blue retired).
-const STATUS_VARIANT: Record<Personnel["status"], "success" | "info" | "neutral"> = {
-  active: "success",
-  retired: "info",
-  separated: "neutral",
-};
 
 /**
  * ComputedBreakdown — read-only roll-up of the fully computed profile: monthly
@@ -23,9 +15,7 @@ export function ComputedBreakdown({
   personName,
   rank,
   salaryGrade,
-  status,
   joinDate,
-  separationDate,
   serviceYears,
   payslipAccountNo,
 }: {
@@ -33,15 +23,12 @@ export function ComputedBreakdown({
   personName: string;
   rank: string;
   salaryGrade: number;
-  status: Personnel["status"];
   joinDate: string;
-  separationDate?: string;
   serviceYears: number;
   payslipAccountNo?: string;
 }) {
   const { monthly, annual, totalMonthly, totalAnnual, pension } = computed;
   const nonZeroMonthly = monthly.filter((i) => i.amount !== 0);
-  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
 
   return (
     <div className="space-y-6">
@@ -49,7 +36,7 @@ export function ComputedBreakdown({
         <CardHeader>
           <div className="flex items-start justify-between gap-3">
             <CardTitle>Computed Compensation</CardTitle>
-            <Badge variant={STATUS_VARIANT[status]}>{statusLabel}</Badge>
+            <Badge variant="success">Active</Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -92,14 +79,6 @@ export function ComputedBreakdown({
                 {formatDate(joinDate)}
               </p>
             </div>
-            {separationDate && (
-              <div>
-                <p className="text-[11px] text-muted-foreground">Last Day</p>
-                <p className="text-sm font-semibold text-foreground">
-                  {formatDate(separationDate)}
-                </p>
-              </div>
-            )}
             <div>
               <p className="text-[11px] text-muted-foreground">Years of Service</p>
               <p className="text-sm font-semibold text-foreground">

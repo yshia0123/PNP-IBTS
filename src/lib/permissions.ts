@@ -13,7 +13,6 @@ export type ModuleKey =
   | "dashboard"
   | "personnel"
   | "claims"
-  | "retirees"
   | "financial"
   | "compensation"
   | "audit"
@@ -25,10 +24,8 @@ export type Capability =
   | "claims.read"
   | "claims.decide" // approve / reject
   | "claims.submit"
-  | "retirees.read"
   | "financial.read"
   | "audit.read"
-  | "dependents.verify"
   | "compensation.read"
   | "compensation.override"; // edit allowance overrides (Admin-only)
 
@@ -38,7 +35,6 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "dashboard",
       "personnel",
       "claims",
-      "retirees",
       "financial",
       "compensation",
       "audit",
@@ -50,10 +46,8 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "claims.read",
       "claims.decide",
       "claims.submit",
-      "retirees.read",
       "financial.read",
       "audit.read",
-      "dependents.verify",
       "compensation.read",
       "compensation.override", // Admin may edit allowance overrides
     ],
@@ -63,7 +57,6 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "dashboard",
       "personnel",
       "claims",
-      "retirees",
       "financial",
       "compensation",
       "audit",
@@ -74,24 +67,14 @@ const MATRIX: Record<Role, { nav: ModuleKey[]; can: Capability[] }> = {
       "personnel.write",
       "claims.read",
       "claims.decide",
-      "retirees.read",
       "financial.read", // read-only (no financial.write capability exists)
       "audit.read", // read-only
-      "dependents.verify",
       "compensation.read", // read-only (no compensation.override)
     ],
   },
   officer: {
     nav: ["dashboard", "personnel", "claims", "settings"],
     can: ["personnel.read", "claims.read", "claims.submit"],
-  },
-  retiree: {
-    nav: ["dashboard", "claims", "retirees", "settings"],
-    can: ["claims.read", "claims.submit", "retirees.read"],
-  },
-  dependent: {
-    nav: ["dashboard", "settings"],
-    can: [],
   },
 };
 

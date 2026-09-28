@@ -3,7 +3,7 @@ import { apiFetch } from "@/lib/api-client";
 import { useSessionStore } from "@/lib/stores/session-store";
 
 export interface SearchResult {
-  type: "personnel" | "claim" | "retiree";
+  type: "personnel" | "claim";
   id: string;
   label: string;
   sublabel: string;

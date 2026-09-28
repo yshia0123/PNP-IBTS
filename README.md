@@ -11,24 +11,28 @@ production backend, authentication, or business logic.
 
 ## Status
 
-**All five phases complete.** Shell, dashboard, and every module are built:
-Personnel (with add-account + edit), Claims (request + review workflow),
-Retirees, Financial Reports (charts + CSV export), Audit Log, and Settings
-(profile + change password). Phase 5 polish (skeletons, empty states, route
-error boundaries, demo script) is in place.
+**All modules complete.** Shell, dashboard, and every module are built:
+Personnel (with add-officer + edit), Claims (request + review workflow),
+Financial Reports (charts + CSV export), Compensation (per-person pay editor),
+Audit Log, and Settings (profile + change password). Polish (skeletons, empty
+states, route error boundaries, demo script) is in place.
+
+The system covers **active personnel only** across three roles — Admin,
+HR Manager, and Officer.
 
 Access is behind a **mock login** (not real security — SSOT Section 1.4). The
-prototype ships **one representative account per role**; the signed-in role
-re-scopes data and gates which sidebar modules and actions are available, per
-the Role-Based View Matrix (SSOT Section 2.4).
+signed-in role re-scopes data and gates which sidebar modules and actions are
+available, per the Role-Based View Matrix (SSOT Section 2.4).
 
 | Role | Demo account | Sees |
 |---|---|---|
-| Admin | j.reyes@ibts.local / admin123 | All modules, full access |
-| HR Manager | a.cruz@ibts.local / hr123 | All modules; read-only Financial & Audit |
-| Officer | s.bautista@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
-| Retiree | r.domingo@ibts.local / retiree123 | Dashboard, Claims (own), Retirees, Settings |
-| Dependent | m.cruz@ibts.local / dependent123 | Dashboard (verification focus), Settings |
+| Admin | j.reyes@ibts.local / admin123 | All modules, full access (incl. Compensation edit) |
+| HR Manager | a.cruz@ibts.local / hr123 | All modules; read-only Financial, Compensation & Audit |
+| Officer (PCPT) | s.bautista@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
+| Officer (PCOL) | r.lingayo@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
+| Officer (PGEN) | m.santos@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
+| Officer (PLT) | g.villanueva@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
+| Officer (NUP) | e.ramos@ibts.local / officer123 | Dashboard, Personnel (read), Claims (own), Settings |
 
 Live demo: **https://pnp-ibts.vercel.app** · See
 [`README-DEMO.md`](./README-DEMO.md) for the end-user tutorial.
@@ -68,27 +72,23 @@ npm run lint        # ESLint
 npm run type-check  # tsc --noEmit
 ```
 
-## How the mock API works
+## How the API works
 
-- MSW intercepts `fetch` calls at the network layer (see `src/mocks/`).
-- The service worker script lives at `public/mockServiceWorker.js`.
-- In development, the worker is started before the app renders (deferred
-  mounting) via `src/mocks/msw-init.tsx`, loaded client-side only.
-- Feature handlers are registered in `src/mocks/handlers.ts` (auth, dashboard,
-  personnel, claims, retirees, financial, audit, notifications, search).
-- The mock "database" (`src/mocks/db.ts`) is seeded from the JSON fixtures and
-  **persisted to `localStorage`**, so changes (new claims, decisions, created
-  accounts, notifications) survive reloads and logout/login. To reset, clear
-  the `ibts-mock-db:1` key in localStorage.
-
-Local JSON fixtures live in [`/mock-data`](./mock-data), one file per entity,
-matching the interfaces in `src/lib/types.ts` (SSOT Section 4.1).
+- Server-side API routes under `src/app/api/*` are backed by Supabase (see
+  `src/lib/supabase-server.ts`), covering auth, dashboard, personnel, claims,
+  financial, compensation, audit, notifications, and search.
+- The browser never talks to Supabase directly — all access goes through the
+  API routes, which use a server-only service-role client.
+- Local JSON fixtures live in [`/mock-data`](./mock-data) and were used to seed
+  the Supabase tables; they match the interfaces in `src/lib/types.ts`
+  (SSOT Section 4.1).
 
 ## Authentication (mock)
 
-The app is gated by a mock login (`/login`). Credentials are validated against
-`mock-data/credentials.json` via MSW; the session persists to `localStorage`.
-This is a prototype convenience, **not** a real security boundary.
+The app is gated by a mock login (`/login`). Credentials are validated by the
+`/api/session/login` route against the Supabase `users` table; the session
+persists to `localStorage`. This is a prototype convenience, **not** a real
+security boundary.
 
 ## Project Structure
 
@@ -102,8 +102,8 @@ src/
     layout/                # Shell: header, sidebar, status-bar, app-shell, auth-gate
     ui/                    # Reusable primitives: card, badge, data-table, modal, toaster, ...
   features/                # Feature-based modules:
-                           #   auth, dashboard, personnel, claims, retirees,
-                           #   financial, settings, search, notifications
+                           #   auth, dashboard, personnel, claims,
+                           #   financial, compensation, settings, search, notifications
   lib/                     # types, utils, permissions, format, stores/,
                            #   supabase-server, db-mappers, api-helpers
 PROJECT_SOURCE_OF_TRUTH.md # architecture single source of truth

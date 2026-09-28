@@ -14,27 +14,15 @@ export async function PATCH(
     fullName: string;
     rank: string;
     joinDate: string;
-    separationDate: string | null;
-    status: "active" | "retired" | "separated";
   }>;
 
   const patch: Record<string, unknown> = {};
   if (body.fullName !== undefined) patch.full_name = body.fullName;
   if (body.rank !== undefined) patch.rank = body.rank;
   if (body.joinDate !== undefined) patch.join_date = body.joinDate;
-  if (body.separationDate !== undefined) {
-    patch.separation_date = body.separationDate || null;
-  }
-  if (body.status !== undefined) {
-    patch.status = body.status;
-    // Clear separation date when a person is set back to active.
-    if (body.status === "active" && body.separationDate === undefined) {
-      patch.separation_date = null;
-    }
-  }
 
   // First apply the edits, then re-read to recompute and cache service_years
-  // from the resulting join/separation dates (the column is a mirror only).
+  // from the resulting join date (the column is a mirror only).
   const { data: updated, error } = await supabaseAdmin
     .from("personnel")
     .update(patch)
@@ -44,10 +32,7 @@ export async function PATCH(
 
   if (error || !updated) return jsonError("Personnel record not found.", 404);
 
-  const computedYears = computeServiceYears(
-    updated.join_date,
-    updated.separation_date
-  );
+  const computedYears = computeServiceYears(updated.join_date);
   const { data: mirrored } = await supabaseAdmin
     .from("personnel")
     .update({ service_years: computedYears })

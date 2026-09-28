@@ -10,22 +10,18 @@ export async function GET() {
   return NextResponse.json((data ?? []).map(mapPersonnel));
 }
 
-// Admin creates a new account (officer / retiree / dependent).
+// Admin creates a new officer account.
 export async function POST(request: Request) {
   const actorId = currentUserId(request) ?? "unknown";
   const body = (await request.json().catch(() => ({}))) as {
     fullName?: string;
     email?: string;
-    role?: "officer" | "retiree" | "dependent";
     rank?: string;
     joinDate?: string;
-    separationDate?: string | null;
-    relationship?: "spouse" | "child" | "parent" | "other";
-    sponsorPersonnelId?: string;
   };
 
-  if (!body.fullName || !body.email || !body.role) {
-    return jsonError("Name, email, and role are required.", 422);
+  if (!body.fullName || !body.email || !body.rank) {
+    return jsonError("Name, email, and rank are required.", 422);
   }
 
   const { data: existing } = await supabaseAdmin
@@ -42,47 +38,32 @@ export async function POST(request: Request) {
   const { error: userErr } = await supabaseAdmin.from("users").insert({
     id: userId,
     name: body.fullName,
-    role: body.role,
-    rank: body.rank ?? null,
+    role: "officer",
+    rank: body.rank,
     email: body.email,
     password: "changeme123",
   });
   if (userErr) return jsonError("Failed to create the account.", 500);
 
-  let createdPersonnel = null;
-  if (body.role === "officer" || body.role === "retiree") {
-    const personnelId = `p-${Date.now()}`;
-    const joinDate = body.joinDate || todayLocal();
-    const separationDate =
-      body.role === "retiree" ? body.separationDate || null : null;
-    const { data } = await supabaseAdmin
-      .from("personnel")
-      .insert({
-        id: personnelId,
-        user_id: userId,
-        full_name: body.fullName,
-        rank: body.rank ?? "N/A",
-        // Cached mirror of the computed value (source of truth is the dates).
-        service_years: computeServiceYears(joinDate, separationDate),
-        join_date: joinDate,
-        separation_date: separationDate,
-        status: body.role === "retiree" ? "retired" : "active",
-        promotion_history: [],
-      })
-      .select("*")
-      .maybeSingle();
-    createdPersonnel = data ? mapPersonnel(data) : null;
-  } else if (body.role === "dependent") {
-    await supabaseAdmin.from("dependents").insert({
-      id: `d-${Date.now()}`,
-      personnel_id: body.sponsorPersonnelId ?? null,
+  const personnelId = `p-${Date.now()}`;
+  const joinDate = body.joinDate || todayLocal();
+  const { data } = await supabaseAdmin
+    .from("personnel")
+    .insert({
+      id: personnelId,
+      user_id: userId,
       full_name: body.fullName,
-      relationship: body.relationship ?? "other",
-      verification_status: "unverified",
-      requested_date: todayLocal(),
-    });
-  }
+      rank: body.rank,
+      // Cached mirror of the computed value (source of truth is the join date).
+      service_years: computeServiceYears(joinDate),
+      join_date: joinDate,
+      status: "active",
+      promotion_history: [],
+    })
+    .select("*")
+    .maybeSingle();
+  const createdPersonnel = data ? mapPersonnel(data) : null;
 
-  await audit(actorId, `account.created.${body.role}`, "user", userId);
+  await audit(actorId, "account.created.officer", "user", userId);
   return NextResponse.json({ personnel: createdPersonnel }, { status: 201 });
 }

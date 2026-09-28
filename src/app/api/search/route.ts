@@ -3,14 +3,14 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { currentUserId } from "@/lib/api-helpers";
 
 interface Result {
-  type: "personnel" | "claim" | "retiree";
+  type: "personnel" | "claim";
   id: string;
   label: string;
   sublabel: string;
   href: string;
 }
 
-// Role-scoped global search across personnel, claims, and retirees.
+// Role-scoped global search across personnel and claims.
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
@@ -20,12 +20,10 @@ export async function GET(request: Request) {
   const { data: user } = userId
     ? await supabaseAdmin.from("users").select("role").eq("id", userId).maybeSingle()
     : { data: null };
-  const role = user?.role ?? "dependent";
+  const role = user?.role ?? "officer";
 
   const canPersonnel = role === "admin" || role === "hr_manager";
   const canClaims = role === "admin" || role === "hr_manager";
-  const canRetirees =
-    role === "admin" || role === "hr_manager" || role === "retiree";
 
   const results: Result[] = [];
 
@@ -64,23 +62,6 @@ export async function GET(request: Request) {
           href: "/claims",
         });
       }
-    }
-  }
-
-  if (canRetirees) {
-    const { data } = await supabaseAdmin
-      .from("personnel")
-      .select("id, full_name, rank")
-      .eq("status", "retired")
-      .ilike("full_name", `%${q}%`);
-    for (const p of data ?? []) {
-      results.push({
-        type: "retiree",
-        id: `ret-${p.id}`,
-        label: p.full_name,
-        sublabel: `${p.rank} · Retiree`,
-        href: "/retirees",
-      });
     }
   }
 

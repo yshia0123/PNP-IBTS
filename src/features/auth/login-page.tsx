@@ -168,10 +168,11 @@ export function LoginPage() {
             <ul className="mt-2 space-y-1">
               <li>Admin — j.reyes@ibts.local / admin123</li>
               <li>HR Manager — a.cruz@ibts.local / hr123</li>
-              <li>Officer — s.bautista@ibts.local / officer123</li>
-              <li>Officer — r.lingayo@ibts.local / officer123</li>
-              <li>Retiree — r.domingo@ibts.local / retiree123</li>
-              <li>Dependent — m.cruz@ibts.local / dependent123</li>
+              <li>Officer (PCPT) — s.bautista@ibts.local / officer123</li>
+              <li>Officer (PCOL) — r.lingayo@ibts.local / officer123</li>
+              <li>Officer (PGEN) — m.santos@ibts.local / officer123</li>
+              <li>Officer (PLT) — g.villanueva@ibts.local / officer123</li>
+              <li>Officer (NUP) — e.ramos@ibts.local / officer123</li>
             </ul>
           </details>
         </div>

@@ -39,7 +39,7 @@ function parseNonNegative(raw: string): number | null {
  * Access is gated through the existing role state (session store + permissions).
  */
 export function CompensationPage() {
-  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
+  const role = useSessionStore((s) => s.currentUser?.role ?? "officer");
   const canEdit = can(role, "compensation.override");
 
   const { data: people, isLoading: loadingPeople } = usePersonnelList();
@@ -183,9 +183,7 @@ export function CompensationPage() {
                   personName={comp.person.fullName}
                   rank={comp.person.rank}
                   salaryGrade={comp.salaryGrade}
-                  status={comp.person.status}
                   joinDate={comp.person.joinDate}
-                  separationDate={comp.person.separationDate}
                   serviceYears={comp.person.serviceYears}
                   payslipAccountNo={payslipDraft}
                 />

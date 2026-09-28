@@ -9,8 +9,6 @@ const ROLE_LABEL: Record<Role, string> = {
   admin: "Admin",
   hr_manager: "HR Manager",
   officer: "Officer",
-  retiree: "Retiree",
-  dependent: "Dependent",
 };
 
 /**

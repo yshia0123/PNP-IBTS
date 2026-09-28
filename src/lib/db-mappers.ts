@@ -2,7 +2,6 @@ import type {
   AuditLog,
   Benefit,
   Claim,
-  Dependent,
   Notification,
   Personnel,
   PromotionRecord,
@@ -35,13 +34,12 @@ export function mapPersonnel(row: any): Personnel {
     userId: row.user_id,
     fullName: row.full_name,
     rank: row.rank,
-    // Always computed from dates so every module gets a consistent, real-time
-    // figure. The stored service_years column is a cached mirror only.
-    serviceYears: computeServiceYears(row.join_date, row.separation_date),
+    // Always computed from the join date so every module gets a consistent,
+    // real-time figure. The stored service_years column is a cached mirror.
+    serviceYears: computeServiceYears(row.join_date),
     joinDate: row.join_date,
-    separationDate: row.separation_date ?? undefined,
     payslipAccountNo: row.payslip_account_no ?? undefined,
-    status: row.status,
+    status: "active",
     promotionHistory: (row.promotion_history ?? []) as PromotionRecord[],
     compensation: (row.compensation ?? {}) as Personnel["compensation"],
   };
@@ -70,17 +68,6 @@ export function mapClaim(row: any): Claim {
     reviewedBy: row.reviewed_by ?? undefined,
     reviewedAt: row.reviewed_at ?? undefined,
     notes: row.notes ?? undefined,
-  };
-}
-
-export function mapDependent(row: any): Dependent {
-  return {
-    id: row.id,
-    personnelId: row.personnel_id,
-    fullName: row.full_name,
-    relationship: row.relationship,
-    verificationStatus: row.verification_status,
-    requestedDate: row.requested_date ?? undefined,
   };
 }
 

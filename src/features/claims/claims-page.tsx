@@ -38,7 +38,7 @@ export function ClaimsPage() {
   const { data, isLoading, isError, refetch } = useClaims();
   const startReview = useStartReview();
   const decide = useDecideClaim();
-  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
+  const role = useSessionStore((s) => s.currentUser?.role ?? "officer");
   const canDecide = can(role, "claims.decide");
   const canSubmit = can(role, "claims.submit");
 

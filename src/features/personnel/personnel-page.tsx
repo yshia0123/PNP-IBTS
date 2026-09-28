@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pencil, UserPlus } from "lucide-react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -19,20 +19,26 @@ import { AddAccountModal } from "./add-account-modal";
  */
 const STATUS_VARIANT = {
   active: "success",
-  retired: "info",
-  separated: "neutral",
 } as const;
 
 const STATUS_LABEL: Record<Personnel["status"], string> = {
   active: "Active",
-  retired: "Retired",
-  separated: "Separated",
 };
 
 export function PersonnelPage() {
   const { data, isLoading, isError, refetch } = usePersonnel();
-  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
+  const role = useSessionStore((s) => s.currentUser?.role ?? "officer");
   const canWrite = can(role, "personnel.write");
+
+  // Show records alphabetically by name by default (users can still re-sort
+  // via the column headers).
+  const sortedData = useMemo(
+    () =>
+      [...(data ?? [])].sort((a, b) =>
+        a.fullName.localeCompare(b.fullName)
+      ),
+    [data]
+  );
 
   const [editing, setEditing] = useState<Personnel | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -97,7 +103,7 @@ export function PersonnelPage() {
 
       <DataTable
         columns={columns}
-        data={data ?? []}
+        data={sortedData}
         getRowId={(p) => p.id}
         isLoading={isLoading}
         isError={isError}
@@ -126,11 +132,7 @@ export function PersonnelPage() {
         onClose={() => setEditOpen(false)}
       />
 
-      <AddAccountModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        personnel={data ?? []}
-      />
+      <AddAccountModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
 }

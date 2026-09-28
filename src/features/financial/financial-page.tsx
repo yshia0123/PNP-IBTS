@@ -34,7 +34,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function FinancialPage() {
   const { data, isLoading, isError, refetch } = useFinancialSummary();
-  const role = useSessionStore((s) => s.currentUser?.role ?? "dependent");
+  const role = useSessionStore((s) => s.currentUser?.role ?? "officer");
   const canExport = role === "admin"; // HR is read-only (Section 2.4)
 
   const handleExport = () => {
